@@ -1,0 +1,59 @@
+.devlink-messages-aside {
+  background: #ffffff !important;
+  background-image: none !important;
+  width: 100% !important;
+  max-width: 20rem !important; /* 320px */
+}
+
+.dark .devlink-messages-aside {
+  background: #0B0C0D !important;
+  background-image: none !important;
+  color: #ffffff !important;
+}
+
+/* Ensure children don't use translucent backgrounds or backdrop filters */
+.devlink-messages-aside, .devlink-messages-aside * {
+  background-color: inherit !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+/* Conversation item explicit backgrounds */
+.devlink-conversation-item {
+  background: #ffffff !important;
+}
+
+.dark .devlink-conversation-item {
+  background: #0B0C0D !important;
+  color: #ffffff !important;
+}
+
+/* Prevent hover overlays from using semi-transparent colors */
+.devlink-conversation-item:hover {
+  background: #F3F4F6 !important; /* light hover for white */
+}
+
+.dark .devlink-conversation-item:hover {
+  background: #111214 !important; /* dark hover for dark */
+}
+
+/* Ensure the main chat pane sits flush to the right of the sidebar on md+ */
+@media (min-width: 768px) {
+  .devlink-chat-main {
+    margin-left: 20rem !important; /* ml-80 */
+  }
+  .devlink-messages-aside {
+    width: 20rem !important; /* w-80 */
+  }
+  /* Remove rounding on adjacent corners so they touch */
+  .devlink-messages-aside {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+  }
+  .devlink-chat-main {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+  }
+}

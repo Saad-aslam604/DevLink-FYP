@@ -1,0 +1,21 @@
+{
+  "folders": [
+    {
+      "path": "."
+    },
+    {
+      "path": "frontend"
+    }
+  ],
+  "settings": {
+    // Prefer the workspace TypeScript installed under frontend so the editor resolves the same types as the CLI
+    "typescript.tsdk": "C:/Users/Lenovo/OneDrive/Desktop/devlink by deep/frontend/node_modules/typescript/lib",
+
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+
+    // Keep editor quiet about expanding the workspace Root package.json
+    "eslint.workingDirectories": [
+      { "mode": "auto" }
+    ]
+  }
+}

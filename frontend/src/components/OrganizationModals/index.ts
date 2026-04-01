@@ -1,0 +1,5 @@
+export { default as CreateProjectModal } from './CreateProjectModal'
+export { default as InviteMemberModal } from './InviteMemberModal'
+export { default as TaskCreationModal } from './TaskCreationModal'
+export { default as ResourceAllocationModal } from './ResourceAllocationModal'
+export { default as EditProjectModal } from './EditProjectModal'

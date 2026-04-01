@@ -1,0 +1,159 @@
+:root{
+  --primary:#4F46E5;
+  --primary-light:#6366F1;
+  --primary-dark:#4338CA;
+  --bg-light:#FFFFFF;
+  --bg-dark:#0F172A;
+  --card-light:#F8FAFC;
+  --card-dark:#1E293B;
+  --success:#10B981;
+  --warning:#F59E0B;
+  --danger:#EF4444;
+  --info:#3B82F6;
+  --gradient-primary:linear-gradient(135deg,#4F46E5 0%,#8B5CF6 100%);
+  --gradient-success:linear-gradient(135deg,#10B981 0%,#34D399 100%);
+  --gradient-warning:linear-gradient(135deg,#F59E0B 0%,#FBBF24 100%);
+}
+
+@keyframes modalEnter {
+  from { opacity: 0; transform: scale(.97) translateY(-8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes modalExit {
+  from { opacity: 1; transform: scale(1) translateY(0); }
+  to { opacity: 0; transform: scale(.97) translateY(-8px); }
+}
+
+.dl-modal-backdrop {
+  backdrop-filter: blur(6px) saturate(120%);
+}
+.dl-modal {
+  animation: modalEnter 180ms cubic-bezier(.2,.9,.2,1);
+}
+.dl-modal-exit {
+  animation: modalExit 140ms ease-in;
+}
+
+.dl-header-gradient {
+  background: var(--gradient-primary);
+}
+.dl-header-success {
+  background: var(--gradient-success);
+}
+.dl-header-warning {
+  background: var(--gradient-warning);
+}
+
+.dl-card {
+  box-shadow: 0 10px 30px rgba(2,6,23,0.12);
+  border-radius: 12px;
+}
+
+.dl-glass {
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: blur(6px);
+}
+
+.dl-hr { height:1px; background: rgba(0,0,0,0.06); margin-top:12px; margin-bottom:12px }
+
+/* Application card styles */
+.app-card {
+  border-radius: 12px;
+  padding: 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(248,250,252,0.9));
+  box-shadow: var(--shadow-lg, 0 10px 30px rgba(2,6,23,0.08));
+  transition: transform 200ms ease, box-shadow 200ms ease;
+  border: 1px solid rgba(255,255,255,0.6);
+}
+.app-card:hover { /* avoid moving card visually to prevent overlap with neighbors */
+  transform: none; 
+  box-shadow: 0 18px 40px rgba(2,6,23,0.12);
+}
+
+.app-card-gradient-border {
+  border-radius: 14px;
+  padding: 1px; /* for gradient border */
+  background: linear-gradient(90deg, rgba(79,70,229,0.12), rgba(139,92,246,0.08));
+}
+
+/* Ensure cards size to column and don't overflow/overlap neighbors */
+.app-card-gradient-border,
+.app-card {
+  box-sizing: border-box;
+  width: 100%;
+  position: relative;
+}
+
+/* Prevent cards from visually overlapping neighbors: raise hovered card above siblings */
+.app-card { z-index: 1; overflow: hidden; }
+
+/* keep stacking consistent but avoid overlap when hovered */
+.app-card:hover { z-index: 2; }
+
+/* Ensure the right column expands so footer (buttons) remain inside card */
+.app-card .flex-1 { display: flex; flex-direction: column; justify-content: space-between; }
+
+/* Footer actions container: make buttons wrap and stay inside card */
+.app-card .flex.items-center { flex-wrap: wrap; gap: 8px; }
+.app-card button { white-space: nowrap; }
+
+/* Provide a consistent minimum height to avoid layout shifts that can cause overlap */
+.app-card { min-height: 120px; }
+
+/* Make card containers use flex column so all cards in the grid get equal height */
+.app-card-gradient-border {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch; /* ensure grid item stretches */
+  height: 100%;
+}
+
+.app-card {
+  display: flex;
+  flex: 1 1 auto; /* allow card to expand to fill container */
+  align-items: stretch;
+}
+
+/* Right column should grow to fill available height so footer stays at bottom */
+.app-card .flex-1 {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1 1 auto;
+}
+
+/* Left column (avatar/score) layout to align nicely without forcing extra height */
+.app-card > .flex-shrink-0 {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.avatar-ring { width:56px; height:56px; border-radius:9999px; overflow:hidden; display:inline-flex; align-items:center; justify-content:center; }
+.avatar-ring img { width:56px; height:56px; object-fit:cover }
+.avatar-status { box-shadow: 0 0 0 4px rgba(79,70,229,0.08); border-radius:9999px }
+
+.skill-chip { padding:6px 8px; border-radius:999px; font-size:12px; background:rgba(15,23,42,0.04); color:var(--primary-dark); }
+
+.score-circle { width:56px; height:56px; display:inline-block }
+.score-circle svg { transform: rotate(-90deg) }
+.score-text { font-weight:600; font-size:12px }
+
+/* Header badges */
+.stats-badges { display:flex; gap:12px; align-items:center }
+.stats-badge { padding:8px 12px; border-radius:999px; background:linear-gradient(90deg, rgba(255,255,255,0.9), rgba(255,255,255,0.8)); box-shadow: 0 6px 18px rgba(2,6,23,0.06); display:flex; align-items:center; gap:8px }
+.stats-badge .num { font-weight:700; color:var(--primary-dark) }
+
+/* Filters */
+.filters-compact { background: linear-gradient(180deg, var(--card-light), #fff); padding:12px; border-radius:12px }
+.filters-search { display:flex; gap:8px; align-items:center }
+.filters-search input { flex:1 }
+.score-range { display:flex; gap:8px; align-items:center }
+
+/* AI Panel */
+.ai-panel { background: var(--gradient-primary); color:white; padding:16px; border-radius:12px; box-shadow: 0 10px 30px rgba(79,70,229,0.08) }
+.ai-panel h4 { color: rgba(255,255,255,0.95) }
+.ai-stat { display:flex; justify-content:space-between; align-items:center; gap:8px }
+
+

@@ -1,0 +1,33 @@
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# Backup files
+*.bak
+*.backup
+backups/
+.env.backup
+.env.bak
+
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Logs
+*.log
+npm-debug.log
+test-*-output.log
+
+# OS
+.DS_Store
+.vscode/
+
+# Uploads & temp files
+uploads/
+.env.local
+
+# Build outputs
+dist/
+build/
+.next/

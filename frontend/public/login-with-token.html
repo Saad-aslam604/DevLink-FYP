@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Login helper — DevLink</title>
+    <style>body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:2rem;background:#0b1220;color:#fff}</style>
+  </head>
+  <body>
+    <h1>DevLink — Login helper</h1>
+    <p id="status">Initializing…</p>
+    <script>
+      (function(){
+        function qs(name){
+          const params = new URLSearchParams(location.search);
+          return params.get(name);
+        }
+        const token = qs('token');
+        const userId = qs('userId');
+        const redirect = qs('redirect') || '/messages';
+        const status = document.getElementById('status');
+        if(!token || !userId){
+          status.textContent = 'Missing token or userId in query string. Example: ?token=...&userId=...';
+          return;
+        }
+        try{
+          // Store token and user id in localStorage for the frontend origin
+          localStorage.setItem('devlink_token', token);
+          localStorage.setItem('devlink_user_id', userId);
+          status.textContent = 'Token stored. Redirecting to ' + redirect;
+          // small delay so user can see message
+          setTimeout(()=>{ location.href = redirect; }, 600);
+        }catch(e){
+          status.textContent = 'Failed to set localStorage: ' + e.message;
+        }
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,289 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --github-bg: #0f172a;
+  --github-accent: #0ea5e9;
+  /* Theme-driven variables for chat bubbles and timestamps. Can be overridden by Tailwind or another stylesheet. */
+  --color-primary: #0066FF; /* current-user bubble */
+  --color-bubble-other: #374151; /* incoming bubble */
+  --bubble-text-current: #ffffff;
+  --timestamp-color-current: rgba(255,255,255,0.85);
+  --timestamp-color-other: rgba(255,255,255,0.7);
+  --timestamp-font-size: 0.65rem;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+  @apply bg-gray-50 text-slate-800 dark:bg-gray-900 dark:text-white;
+}
+
+#root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.brand {
+  color: var(--github-accent);
+}
+
+/* Chat message alignment and bubble colors using data attributes
+   - keep existing HTML and Tailwind classes untouched
+   - use data-sender on message wrapper to align and color messages
+*/
+
+[data-sender="current-user"] {
+  margin-left: auto; /* keep message to the right */
+  text-align: right;
+}
+
+[data-sender="other"] {
+  margin-right: auto; /* keep message to the left */
+  text-align: left;
+}
+
+/* Bubble styling: prefer these rules over utility classes by being specific and placed after Tailwind utilities */
+[data-sender="current-user"] .inline-block {
+  background-color: var(--color-primary, #0066FF); /* primary color */
+  color: var(--bubble-text-current, #ffffff) !important;
+  border-color: transparent !important;
+}
+
+[data-sender="current-user"] .inline-block .text-xs {
+  color: var(--timestamp-color-current, rgba(255,255,255,0.85)) !important;
+}
+
+[data-sender="other"] .inline-block {
+  background-color: var(--color-bubble-other, #374151); /* neutral/dark */
+  color: var(--bubble-text-current, #ffffff) !important;
+}
+
+ 
+/* Maintain timestamp and metadata positioning — don't override layout inside the bubble */
+
+/* Timestamp styling: slightly smaller and lighter to improve visual hierarchy
+   - scoped to message bubbles using the data-sender attribute so it doesn't affect other text-xs usages
+   - preserved DOM structure; overrides only visual appearance
+*/
+[data-sender="current-user"] .inline-block .text-xs,
+[data-sender="other"] .inline-block .text-xs {
+  font-size: 0.65rem; /* slightly smaller than text-xs */
+  line-height: 1;
+  opacity: 0.75;
+}
+
+[data-sender="current-user"] .inline-block .text-xs {
+  color: rgba(255,255,255,0.85) !important; /* lighter but readable on primary bg */
+}
+
+[data-sender="other"] .inline-block .text-xs {
+  color: rgba(255,255,255,0.7) !important; /* slightly dimmer for incoming messages */
+}
+
+/* Keep metadata (failed/sending labels) legible — don't reduce their prominence as much */
+[data-sender] .inline-block .text-xs.important,
+[data-sender] .inline-block .text-xs[data-important="true"] {
+  opacity: 1;
+  font-size: 0.75rem;
+}
+
+/* Contributions wrapper helper: make usernames stand out without changing markup
+   - This selector is safe because it's scoped to `.contrib-wrapper` which is opt-in
+   - Uses Tailwind's @apply to reuse design system utility
+*/
+.contrib-wrapper .username {
+  @apply font-medium text-gray-800 dark:text-white;
+}
+
+/* Terminal layout fixes to ensure the executor stays visible and doesn't get pushed off-screen */
+.terminal-fix {
+  height: 300px !important;
+  min-height: 300px !important;
+  max-height: 300px !important;
+  flex-shrink: 0 !important;
+  overflow-y: auto !important;
+  background-color: #111827 !important;
+  border-top: 2px solid #4B5563 !important;
+}
+
+/* Ensure Monaco editor wrapper can shrink inside flex layouts */
+.monaco-editor-wrapper {
+  min-height: 0 !important;
+}
+
+/* Draggable terminal styles */
+.draggable-terminal {
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.6);
+  z-index: 60;
+  transition: all 0.2s ease;
+}
+
+.draggable-terminal:hover {
+  box-shadow: 0 -10px 35px rgba(0, 0, 0, 0.75);
+}
+
+.resize-handle {
+  cursor: ns-resize;
+  user-select: none;
+}
+
+/* Split view terminal styles */
+.split-view-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-height: 100vh;
+}
+
+.editor-container {
+  flex: 1;
+  min-height: 0; /* critical for flex children */
+  overflow: hidden;
+  position: relative;
+}
+
+.terminal-split {
+  flex-shrink: 0;
+  min-height: 200px;
+  max-height: 600px;
+  overflow: hidden;
+  transition: height 0.2s ease;
+}
+
+.terminal-split:not(.collapsed) {
+  border-top: 2px solid #4b5563;
+}
+
+/* end draggable terminal styles */
+
+/* Layout overrides to ensure editor fills available space and Monaco doesn't get clipped */
+.enhanced-live-coding-container {
+  height: 100vh !important;
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.editor-section {
+  flex: 1 1 0% !important; /* grow, shrink, basis 0% ensures correct flex math */
+  min-height: 0 !important; /* CRITICAL for flex children */
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+/* Monaco-specific fixes: ensure editor and overflow guards fill container */
+.monaco-editor, .monaco-editor .overflow-guard, .monaco-editor-wrapper {
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+/* Terminal bottom helper - ensure fixed terminal styles and editor spacing helper */
+.terminal-bottom {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 100 !important;
+}
+
+.editor-with-terminal {
+  transition: padding-bottom 0.18s ease !important;
+}
+
+/* Dark mode tweaks */
+.dark .terminal-split, .dark .terminal-bottom {
+  background-color: #0f1724 !important;
+  border-top-color: #20232a !important;
+}
+
+/* Custom scrollbar for tasks container */
+.tasks-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tasks-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tasks-container::-webkit-scrollbar-thumb {
+  background: rgba(99,102,241,0.8);
+  border-radius: 9999px;
+}
+
+.tasks-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(99,102,241,1);
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.dark select {
+  color: #ffffff !important;
+  background-color: #1f2937 !important;
+}
+
+.light select {
+  color: #111827 !important;
+}
+
+/* Ensure select option backgrounds are visible in dark mode */
+.dark select option {
+  background-color: #1f2937 !important;
+  color: #ffffff !important;
+}
+
+/* Light mode select options should be visible */
+.light select option {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+}
+
+/* Ensure presence panel adapts to dark mode when shown as full panel */
+.dark .presence-panel {
+  background-color: #0b1220 !important;
+  border-color: #1f2937 !important;
+  color: #e5e7eb !important;
+}
+
+/* Custom scrollbar styling for all scrollable areas */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #9ca3af;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #6b7280;
+}
+
+/* Firefox scrollbar support */
+html, body, main {
+  scrollbar-width: thin;
+  scrollbar-color: #9ca3af transparent;
+}
+
+/* Ensure all overflow-y-scroll elements show scrollbar */
+[class*="overflow-y-scroll"] {
+  scrollbar-width: thin;
+  scrollbar-color: #9ca3af transparent;
+}

@@ -1,0 +1,39 @@
+{
+  "name": "devlink-backend",
+  "version": "1.0.0",
+  "description": "DevLink backend (Express + MongoDB + JWT)",
+  "main": "src/index.js",
+  "scripts": {
+  "start": "node src/index.js",
+  "dev": "nodemon src/index.js",
+  "e2e:smoke": "node ./scripts/e2e-smoke.js",
+  "backup": "powershell -NoProfile -ExecutionPolicy Bypass -File ./backup-project.ps1",
+  "migrate:create-profiles": "node ./scripts/create-profiles-from-users.js",
+  "test:realtime": "node ./scripts/run-realtime-tests.js",
+  "migrate:fix-messages": "node ./scripts/fix-messages.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^6.11.2",
+    "express-validator": "^7.3.1",
+    "google-auth-library": "^8.7.0",
+    "helmet": "^7.2.0",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^7.3.1",
+    "morgan": "^1.10.1",
+    "multer": "^1.4.5-lts.1",
+    "socket.io": "^4.8.1",
+    "stripe": "^12.12.0"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^8.11.0",
+    "node-fetch": "^2.7.0",
+    "nodemon": "^2.0.22",
+    "socket.io-client": "^4.8.1"
+  }
+}

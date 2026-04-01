@@ -1,0 +1,178 @@
+export type Mentor = {
+  id: string
+  name: string
+  title: string
+  skills: string[]
+  level: 'Junior' | 'Mid' | 'Senior' | 'Lead'
+  experienceYears: number
+  availability: string[] // days or 'Online'
+  rating: number
+  bio: string
+  avatar: string
+  pricePerHour: number
+  // optional role field for filtering (backend results include this)
+  role?: 'student' | 'junior' | 'mentor' | 'admin'
+  // optional availability flag when mapping backend results
+  isAvailable?: boolean
+}
+
+export const MENTORS: Mentor[] = [
+  {
+    id: 'm1',
+  name: 'Muhammad Talha',
+    title: 'Senior Software Engineer',
+    skills: ['React', 'Node.js', 'TypeScript', 'GraphQL'],
+    level: 'Senior',
+    experienceYears: 9,
+    availability: ['Mon', 'Wed', 'Fri', 'Online'],
+    rating: 4.8,
+    bio: 'Building user-centric interfaces and resilient APIs. Loves mentoring engineers on architecture and testing.',
+    avatar: 'https://i.pravatar.cc/150?img=12',
+    pricePerHour: 120,
+  },
+  {
+    id: 'm2',
+  name: 'Saad Aslam',
+    title: 'Data Scientist',
+    skills: ['Python', 'Pandas', 'ML', 'SQL'],
+    level: 'Lead',
+    experienceYears: 11,
+    availability: ['Tue', 'Thu'],
+    rating: 4.9,
+    bio: 'Specializes in productionizing machine learning models and mentoring teams on data-driven decision-making.',
+    avatar: 'https://i.pravatar.cc/150?img=5',
+    pricePerHour: 150,
+  },
+  {
+    id: 'm3',
+  name: 'Rana Zain Ali',
+    title: 'Frontend Engineer',
+    skills: ['React', 'Tailwind', 'Accessibility', 'Design Systems'],
+    level: 'Mid',
+    experienceYears: 5,
+    availability: ['Mon', 'Tue', 'Wed', 'Online'],
+    rating: 4.6,
+    bio: 'Design-system-first frontend engineer. Focuses on accessibility and performance.',
+    avatar: 'https://i.pravatar.cc/150?img=15',
+    pricePerHour: 90,
+  },
+  {
+    id: 'm4',
+    name: 'Bilal Shah',
+    title: 'DevOps Engineer',
+    skills: ['Kubernetes', 'AWS', 'CI/CD', 'Terraform'],
+    level: 'Senior',
+    experienceYears: 8,
+    availability: ['Wed', 'Thu', 'Fri'],
+    rating: 4.7,
+    bio: 'Helps teams automate deployments and scale reliably. Loves teaching about SRE practices.',
+    avatar: 'https://i.pravatar.cc/150?img=3',
+    pricePerHour: 130,
+  },
+  {
+    id: 'm5',
+    name: 'Aleem Raza',
+    title: 'Product Manager',
+    skills: ['Roadmapping', 'Discovery', 'User Research'],
+    level: 'Lead',
+    experienceYears: 10,
+    availability: ['Mon', 'Thu', 'Online'],
+    rating: 4.85,
+    bio: 'Helps founders and PMs turn problems into high-impact product roadmaps.',
+    avatar: 'https://i.pravatar.cc/150?img=21',
+    pricePerHour: 140,
+  },
+  {
+    id: 'm6',
+    name: 'Ayesha Khan',
+    title: 'Mobile Engineer',
+    skills: ['iOS', 'Swift', 'React Native'],
+    level: 'Mid',
+    experienceYears: 4,
+    availability: ['Tue', 'Fri'],
+    rating: 4.5,
+    bio: 'iOS-first developer who helps teams ship performant mobile experiences.',
+    avatar: 'https://i.pravatar.cc/150?img=8',
+    pricePerHour: 85,
+  },
+  {
+    id: 'm7',
+    name: 'Fatima Noor',
+    title: 'UX Researcher',
+    skills: ['User Research', 'Interviewing', 'Figma'],
+    level: 'Senior',
+    experienceYears: 7,
+    availability: ['Mon', 'Wed'],
+    rating: 4.75,
+    bio: 'Helps teams discover real user needs and validate product decisions.',
+    avatar: 'https://i.pravatar.cc/150?img=11',
+    pricePerHour: 110,
+  },
+  {
+    id: 'm8',
+    name: 'Hassan Raza',
+    title: 'Backend Engineer',
+    skills: ['Node.js', 'Postgres', 'Scaling'],
+    level: 'Senior',
+    experienceYears: 8,
+    availability: ['Tue', 'Thu', 'Online'],
+    rating: 4.6,
+    bio: 'Focuses on scalable APIs and database performance. Enjoys mentoring on system design.',
+    avatar: 'https://i.pravatar.cc/150?img=18',
+    pricePerHour: 125,
+  },
+  {
+    id: 'm9',
+    name: 'Mariam Ali',
+    title: 'Data Engineer',
+    skills: ['ETL', 'Spark', 'Airflow', 'Python'],
+    level: 'Mid',
+    experienceYears: 5,
+    availability: ['Mon', 'Fri'],
+    rating: 4.55,
+    bio: 'Helps teams build reliable data pipelines and observability into analytics.',
+    avatar: 'https://i.pravatar.cc/150?img=30',
+    pricePerHour: 95,
+  },
+  {
+    id: 'm10',
+    name: 'Zubair Khan',
+    title: 'Engineering Manager',
+    skills: ['Leadership', 'Hiring', '1:1 Coaching'],
+    level: 'Lead',
+    experienceYears: 12,
+    availability: ['Wed', 'Online'],
+    rating: 4.9,
+    bio: 'Coaches engineering managers and helps teams scale reliably while keeping culture healthy.',
+    avatar: 'https://i.pravatar.cc/150?img=2',
+    pricePerHour: 160,
+  },
+  {
+    id: 'm11',
+    name: 'Naveed Akhtar',
+    title: 'Machine Learning Engineer',
+    skills: ['PyTorch', 'MLOps', 'Model Deployment'],
+    level: 'Senior',
+    experienceYears: 6,
+    availability: ['Thu', 'Fri'],
+    rating: 4.7,
+    bio: 'Helps teams take ML models from prototype to production with reproducible pipelines.',
+    avatar: 'https://i.pravatar.cc/150?img=7',
+    pricePerHour: 135,
+  },
+  {
+    id: 'm12',
+    name: 'Bilal Ahmed',
+    title: 'SRE',
+    skills: ['Monitoring', 'Incident Response', 'Go'],
+    level: 'Senior',
+    experienceYears: 9,
+    availability: ['Mon', 'Tue', 'Online'],
+    rating: 4.65,
+    bio: 'Obsessed with reliability and helping teams reduce toil through automation.',
+    avatar: 'https://i.pravatar.cc/150?img=14',
+    pricePerHour: 128,
+  },
+]
+
+export default MENTORS

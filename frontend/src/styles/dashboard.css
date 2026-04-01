@@ -1,0 +1,31 @@
+:root{
+  --bg: #F9FAFB;
+  --fg: #111827;
+  --primary: #3B82F6;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+}
+
+:root.dark{
+  --bg: #111827;
+  --fg: #F9FAFB;
+}
+
+.org-dashboard-root{ background: var(--bg); color: var(--fg); }
+
+.dashboard-header{ box-shadow: 0 1px 0 rgba(16,24,40,0.04); }
+.stat-num{ font-weight:700; font-size:1.05rem }
+
+.project-card .proj-icon{ width:48px; height:48px; display:flex; align-items:center; justify-content:center }
+
+.kanban-col{ min-height:160px }
+.task-card{ border:1px solid rgba(0,0,0,0.04) }
+
+.fab{ position: fixed; right: 24px; bottom: 24px; width:56px; height:56px; border-radius:9999px; display:flex; align-items:center; justify-content:center; background:var(--primary); color:white; box-shadow:0 6px 18px rgba(59,130,246,0.18); }
+
+@media (prefers-color-scheme: dark){
+  :root:not(.light) { --bg: #0f1724; --fg: #e6eef8 }
+}
+
+.analytics-grid > div{ min-height: 220px }

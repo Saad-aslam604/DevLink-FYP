@@ -1,0 +1,26 @@
+@media (min-width: 768px) {
+  /* Force the aside to be fixed under the header and the main to occupy remaining space */
+  .messages-aside {
+    position: fixed !important;
+    top: 80px !important; /* header height */
+    left: 0 !important;
+    width: 350px !important;
+    height: calc(100vh - 80px) !important;
+  }
+  .messages-main {
+    margin-left: 350px !important;
+    width: calc(100% - 350px) !important;
+  }
+  /* Remove any extra gap introduced by parent containers */
+  .messages-page-root {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+
+/* Small screens: default stacking behavior */
+@media (max-width: 767px) {
+  .messages-aside, .messages-main { position: static !important; width: 100% !important; margin-left: 0 !important; }
+}

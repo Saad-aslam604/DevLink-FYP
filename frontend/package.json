@@ -1,0 +1,49 @@
+{
+  "name": "devlink-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DevLink frontend (Vite + React + TypeScript + Tailwind + Socket.IO)",
+  "type": "module",
+  "types": "./node_modules/@types",
+  "scripts": {
+    "dev": "vite",
+    "copy:monaco": "npx copyfiles -u 3 \"node_modules/monaco-editor/min/vs/**/*\" public/vs/",
+    "postinstall": "npm run copy:monaco",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@stripe/react-stripe-js": "^1.14.0",
+    "@stripe/stripe-js": "^1.51.0",
+    "axios": "^1.4.0",
+    "clsx": "^1.2.1",
+    "framer-motion": "^10.12.16",
+    "lucide-react": "^0.276.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.66.1",
+    "react-icons": "^5.5.0",
+    "react-router-dom": "^6.14.2",
+    "recharts": "^2.15.4",
+    "socket.io-client": "^4.8.1",
+    "tailwind-merge": "^1.14.0",
+    "y-monaco": "^0.1.6",
+    "y-websocket": "^3.0.0",
+    "yjs": "^13.6.27"
+  },
+  "devDependencies": {
+    "@monaco-editor/react": "^4.7.0",
+    "@types/react": "^18.3.27",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.0.0",
+    "autoprefixer": "^10.4.14",
+    "copyfiles": "^2.4.1",
+    "monaco-editor": "^0.55.1",
+    "postcss": "^8.4.23",
+    "tailwindcss": "^3.0.0",
+    "typescript": "^5.9.3",
+    "vite": "^5.4.0",
+    "vite-plugin-monaco-editor": "^1.1.0"
+  }
+}
