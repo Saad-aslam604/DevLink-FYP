@@ -278,22 +278,52 @@ export default function WebRTCCall({ bookingId: propBookingId, onProvideRemoteSt
   }
 
   const toggleMute = () => {
-    if (localStreamRef.current) {
-      localStreamRef.current.getAudioTracks().forEach(t => { t.enabled = muted })
+    try {
+      if (!localStreamRef.current) {
+        console.warn('[WebRTC] No local stream to mute')
+        return
+      }
+      localStreamRef.current.getAudioTracks().forEach(t => { t.enabled = !muted })
       setMuted(!muted)
+      setStatus(muted ? 'Unmuted' : 'Muted')
+    } catch (e) {
+      console.warn('[WebRTC] toggleMute failed', e)
+      setStatus('Mute failed')
     }
   }
 
   const toggleVideo = async () => {
     try {
+      if (!localStreamRef.current) {
+        console.warn('[WebRTC] No local stream to toggle')
+        return
+      }
+      
       if (videoEnabled) {
+        // Disable video
         localStreamRef.current?.getVideoTracks().forEach(t => t.stop())
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = null
+          localVideoRef.current.style.display = 'none'
+        }
         setVideoEnabled(false)
+        setStatus('Camera disabled')
       } else {
+        // Enable video
         const s = await navigator.mediaDevices.getUserMedia({ video: true, audio: false })
         if (s) {
           localStreamRef.current = s
-          if (localVideoRef.current) { localVideoRef.current.srcObject = s; localVideoRef.current.muted = true; localVideoRef.current.play().catch(() => {}) }
+          if (localVideoRef.current) { 
+            localVideoRef.current.srcObject = s
+            localVideoRef.current.muted = true
+            localVideoRef.current.style.display = 'block'
+            localVideoRef.current.style.visibility = 'visible'
+            localVideoRef.current.style.opacity = '1'
+            try { 
+              const playPromise = localVideoRef.current.play()
+              if (playPromise) playPromise.catch(() => {}) 
+            } catch (e) {}
+          }
           // replace sender track if available
           try {
             const sender = pcRef.current?.getSenders().find(s => s.track && s.track.kind === 'video')
@@ -302,6 +332,7 @@ export default function WebRTCCall({ bookingId: propBookingId, onProvideRemoteSt
             else if (pcRef.current && track) pcRef.current.addTrack(track, s)
           } catch (e) { console.warn('[WebRTC] toggleVideo replaceTrack failed', e) }
           setVideoEnabled(true)
+          setStatus('Camera enabled')
         }
       }
     } catch (e) { console.warn('[WebRTC] toggleVideo error', e); setStatus('Failed to toggle camera') }
@@ -349,6 +380,34 @@ export default function WebRTCCall({ bookingId: propBookingId, onProvideRemoteSt
     }
 
     // Restore UI and cleanup
+    try {
+      if (localVideoRef.current && localStreamRef.current) {
+        localVideoRef.current.srcObject = localStreamRef.current
+        localVideoRef.current.muted = true
+        localVideoRef.current.style.display = 'block'
+        localVideoRef.current.style.visibility = 'visible'
+        localVideoRef.current.style.opacity = '1'
+        try { await localVideoRef.current.play() } catch (e) {}
+      }
+    } catch (e) { console.warn('[WebRTC] restore UI failed', e) }
+    
+    // Force renegotiation by sending updated offer after restoring camera
+    setTimeout(async () => {
+      try {
+        if (pcRef.current && socketRef.current && !signalingLockRef.current) {
+          signalingLockRef.current = true
+          const newOffer = await pcRef.current.createOffer()
+          await pcRef.current.setLocalDescription(newOffer)
+          socketRef.current.emit('webrtc-offer', { bookingId, offer: pcRef.current.localDescription })
+          console.log('✅ Sent updated offer after stopping screen share')
+        }
+      } catch (e) {
+        console.warn('[WebRTC] screen share stop renegotiation failed', e)
+      } finally {
+        setTimeout(() => { signalingLockRef.current = false }, 1000)
+      }
+    }, 100)
+    
     restoreLocalPreview()
     setIsScreenSharing(false)
     setOriginalVideoTrack(null)
@@ -424,6 +483,32 @@ export default function WebRTCCall({ bookingId: propBookingId, onProvideRemoteSt
         try {
           await (videoSender as any).replaceTrack(screenStream.getVideoTracks()[0]);
           setIsScreenSharing(true);
+          
+          // Update local video element to show screen share
+          if (localVideoRef.current) {
+            localVideoRef.current.srcObject = screenStream
+            localVideoRef.current.muted = true
+            localVideoRef.current.style.display = 'block'
+            try { await localVideoRef.current.play() } catch (e) {}
+          }
+          
+          // Force renegotiation by creating a new offer
+          setTimeout(async () => {
+            try {
+              if (pcRef.current && socketRef.current && !signalingLockRef.current) {
+                signalingLockRef.current = true
+                const newOffer = await pcRef.current.createOffer()
+                await pcRef.current.setLocalDescription(newOffer)
+                socketRef.current.emit('webrtc-offer', { bookingId, offer: pcRef.current.localDescription })
+                console.log('✅ Sent updated offer for screen share')
+              }
+            } catch (e) {
+              console.warn('[WebRTC] screen share renegotiation failed', e)
+            } finally {
+              setTimeout(() => { signalingLockRef.current = false }, 1000)
+            }
+          }, 100)
+          
           console.log('✅ Screen sharing active (video completely removed from UI)');
         } catch (e) { 
           console.warn('[WebRTC] replaceTrack with screen failed', e);
@@ -466,21 +551,42 @@ export default function WebRTCCall({ bookingId: propBookingId, onProvideRemoteSt
       const originalParent = (window as any).__originalVideoParent;
       const hiddenContainer = (window as any).__hiddenVideoContainer;
       
-      if (localVideoRef.current && originalParent && hiddenContainer) {
-        // Move video back to its original parent element
-        originalParent.appendChild(localVideoRef.current);
+      if (localVideoRef.current) {
+        // Ensure video is visible
+        localVideoRef.current.style.display = 'block'
+        localVideoRef.current.style.visibility = 'visible'
+        localVideoRef.current.style.opacity = '1'
         
-        // Remove the hidden container from DOM
-        try { hiddenContainer.remove() } catch (e) { console.warn('[WebRTC] remove hidden container failed', e) }
-        
-        // Clean up global references
-        delete (window as any).__originalVideoParent;
-        delete (window as any).__hiddenVideoContainer;
-        
-        console.log('✅ Video element restored to original DOM position');
+        if (originalParent) {
+          try {
+            // Only move if not already in original parent
+            if (localVideoRef.current.parentElement !== originalParent) {
+              originalParent.appendChild(localVideoRef.current)
+            }
+          } catch (e) { console.warn('[WebRTC] appendChild failed, trying alternative restore', e) }
+        }
       }
+      
+      // Remove the hidden container from DOM
+      if (hiddenContainer) {
+        try { hiddenContainer.remove() } catch (e) { console.warn('[WebRTC] remove hidden container failed', e) }
+      }
+      
+      // Clean up global references
+      delete (window as any).__originalVideoParent;
+      delete (window as any).__hiddenVideoContainer;
+      
+      console.log('✅ Video element restored to original DOM position');
     } catch (e) {
       console.warn('[WebRTC] restoreVideoToOriginalPosition failed', e);
+      // Fallback: just make video visible if ref exists
+      try {
+        if (localVideoRef.current) {
+          localVideoRef.current.style.display = 'block'
+          localVideoRef.current.style.visibility = 'visible'
+          localVideoRef.current.style.opacity = '1'
+        }
+      } catch (ee) {}
     }
   }, []);
 
@@ -492,7 +598,7 @@ export default function WebRTCCall({ bookingId: propBookingId, onProvideRemoteSt
       setStatus('Playback OK')
     } catch (e) {
       console.warn('[WebRTC] testPlayback failed', e)
-      setStatus('Playback failed - user interaction required')
+      setStatus('Playback failed')
     }
   }
 
@@ -627,12 +733,10 @@ export default function WebRTCCall({ bookingId: propBookingId, onProvideRemoteSt
             const playPromise = remoteVideoRef.current.play()
             if (playPromise !== undefined) {
               playPromise.then(() => {
-                /* remote video playing */
                 setStatus(prev => (prev === 'Initializing' ? 'Playing' : prev))
               }).catch((err) => {
                 console.warn('[WebRTC] remote play failed', err)
-                // Autoplay is often blocked; reflect in status so user can interact
-                setStatus('Autoplay blocked - user action required')
+                setStatus('Connected - remote video received')
               })
             }
           }
@@ -707,6 +811,28 @@ export default function WebRTCCall({ bookingId: propBookingId, onProvideRemoteSt
       }
 
       // socket handlers
+      // AUTO-INITIATE OFFER when another peer joins
+      socket.on('participant-joined', async (data: any) => {
+        try {
+          console.log('[WebRTC] Participant joined:', data)
+          // After a small delay, attempt to create and send an offer to establish connection
+          setTimeout(async () => {
+            if (signalingLockRef.current) return
+            signalingLockRef.current = true
+            try {
+              const offer = await peer.createOffer()
+              await peer.setLocalDescription(offer)
+              socket.emit('webrtc-offer', { bookingId, offer: peer.localDescription })
+              console.log('[WebRTC] Auto-initiated offer after participant joined')
+            } catch (e) {
+              console.warn('[WebRTC] auto-offer creation failed', e)
+            } finally {
+              setTimeout(() => { signalingLockRef.current = false }, 1000)
+            }
+          }, 200)
+        } catch (e) { console.warn('[WebRTC] participant-joined handler failed', e) }
+      })
+
       socket.on('webrtc-offer', async (data: any) => {
         try {
           /* SDP offer received */
@@ -757,9 +883,23 @@ export default function WebRTCCall({ bookingId: propBookingId, onProvideRemoteSt
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true }, video: true })
         localStreamRef.current = stream
-        if (localVideoRef.current) { localVideoRef.current.srcObject = stream; localVideoRef.current.muted = true; localVideoRef.current.play().catch(() => {}) }
+        
+        // Ensure local video element is visible and plays the stream
+        if (localVideoRef.current) { 
+          localVideoRef.current.srcObject = stream
+          localVideoRef.current.muted = true
+          localVideoRef.current.style.display = 'block'
+          localVideoRef.current.style.visibility = 'visible'
+          localVideoRef.current.style.opacity = '1'
+          try { 
+            const playPromise = localVideoRef.current.play()
+            if (playPromise) playPromise.catch(() => {}) 
+          } catch (e) {}
+        }
+        
         if (localAudioRef.current) { localAudioRef.current.srcObject = stream; localAudioRef.current.muted = true }
         stream.getTracks().forEach(t => { try { peer.addTrack(t, stream) } catch (e) {} })
+        setStatus('Local media ready')
       } catch (e) {
         console.warn('[WebRTC] getUserMedia failed', e)
         setStatus('Media access denied')

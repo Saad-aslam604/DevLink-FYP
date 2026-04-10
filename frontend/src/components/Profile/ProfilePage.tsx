@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { Edit, X, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../UX/ToastProvider'
 import FileUpload from '../../components/FileUpload/FileUpload'
 import FileGallery from '../../components/FileGallery/FileGallery'
+import ReactEasyCrop from 'react-easy-crop'
 // small helper to build auth headers
 function getAuthHeaders(token?: string | null): Record<string, string> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -45,6 +47,11 @@ export default function ProfilePage(): JSX.Element {
   const [avatarFile, setAvatarFile] = useState<File | Blob | null>(null)
   const [uploadingAvatar, setUploadingAvatar] = useState<boolean>(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const [showCropModal, setShowCropModal] = useState(false)
+  const [imageToCrop, setImageToCrop] = useState<string>('')
+  const [crop, setCrop] = useState({ x: 0, y: 0 })
+  const [zoom, setZoom] = useState(1)
+  const [croppedArea, setCroppedArea] = useState<any>(null)
 
   function onPickAvatar() {
     fileInputRef.current?.click()
@@ -54,20 +61,18 @@ export default function ProfilePage(): JSX.Element {
     const file = e.target.files?.[0] ?? null
     if (!file) return
 
-    // show preview immediately
-    const previewUrl = URL.createObjectURL(file)
-    setAvatarUrl(previewUrl)
-
-    // process image (resize, center-crop, convert to webp, circular mask)
     try {
-      const processed = await processImageFile(file, 500)
-      setAvatarFile(processed)
-      // update preview to the processed blob
-      const processedUrl = URL.createObjectURL(processed)
-      setAvatarUrl(processedUrl)
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        const result = event.target?.result as string
+        setImageToCrop(result)
+        setShowCropModal(true)
+        setCrop({ x: 0, y: 0 })
+        setZoom(1)
+      }
+      reader.readAsDataURL(file)
     } catch (err: any) {
-      console.error('Image processing failed', err)
-      setError('Failed to process image. Please try a different picture.')
+      toast?.show && toast.show('Failed to load image: ' + (err?.message ?? String(err)), 'error')
     }
   }
 
@@ -135,7 +140,7 @@ export default function ProfilePage(): JSX.Element {
       const nameFromProfile = [firstName, lastName].filter(Boolean).join(' ')
 
       setFullName(nameFromProfile || (user.user_metadata?.full_name ?? '') || '')
-      setAvatarUrl(profile.avatar ?? null)
+      setAvatarUrl(profile.avatar ? `${profile.avatar}?t=${Date.now()}` : null)
       setBio(profile.bio ?? '')
       setSkills(Array.isArray(profile.skills) ? profile.skills : profile.skills ? [profile.skills] : [])
       setExperience((profile.experienceLevel ?? profile.experience) || 'Mid')
@@ -144,7 +149,7 @@ export default function ProfilePage(): JSX.Element {
 
       originalRef.current = {
         fullName: nameFromProfile || (user.user_metadata?.full_name ?? ''),
-        avatarUrl: profile.avatar ?? null,
+        avatarUrl: profile.avatar ? `${profile.avatar}?t=${Date.now()}` : null,
         bio: profile.bio ?? '',
         skills: Array.isArray(profile.skills) ? profile.skills : profile.skills ? [profile.skills] : [],
         experience: (profile.experienceLevel ?? profile.experience) || 'Mid',
@@ -255,6 +260,70 @@ export default function ProfilePage(): JSX.Element {
     }
   }
 
+  const getCroppedImg = async (): Promise<Blob | null> => {
+    if (!croppedArea || !imageToCrop) return null
+
+    try {
+      const image = new Image()
+      image.src = imageToCrop
+
+      return new Promise((resolve) => {
+        image.onload = () => {
+          const canvas = document.createElement('canvas')
+          const ctx = canvas.getContext('2d')
+          if (!ctx) {
+            resolve(null)
+            return
+          }
+
+          canvas.width = croppedArea.width
+          canvas.height = croppedArea.height
+
+          ctx.drawImage(
+            image,
+            croppedArea.x,
+            croppedArea.y,
+            croppedArea.width,
+            croppedArea.height,
+            0,
+            0,
+            croppedArea.width,
+            croppedArea.height
+          )
+
+          canvas.toBlob((blob) => {
+            resolve(blob)
+          }, 'image/jpeg', 0.95)
+        }
+      })
+    } catch (err) {
+      console.error('Failed to crop image', err)
+      return null
+    }
+  }
+
+  const handleSaveCroppedImage = async () => {
+    try {
+      const croppedBlob = await getCroppedImg()
+      if (!croppedBlob) {
+        toast?.show && toast.show('Failed to crop image', 'error')
+        return
+      }
+
+      // show preview immediately
+      const previewUrl = URL.createObjectURL(croppedBlob)
+      setAvatarUrl(previewUrl)
+      setAvatarFile(croppedBlob)
+
+      setShowCropModal(false)
+      setImageToCrop('')
+      toast?.show && toast.show('Image cropped. Click Save to upload.', 'success')
+    } catch (err: any) {
+      console.error('Avatar crop failed', err)
+      toast?.show && toast.show('Failed to crop image: ' + (err?.message ?? String(err)), 'error')
+    }
+  }
+
   // Process an image file: center-crop square, resize to maxSize x maxSize, apply circular mask and export WebP blob
   async function processImageFile(file: File, maxSize = 500): Promise<Blob> {
     return new Promise<Blob>((resolve, reject) => {
@@ -339,24 +408,40 @@ export default function ProfilePage(): JSX.Element {
     const fd = new FormData()
     // create a File if needed
     let uploadFile: File
-    if (file instanceof File) uploadFile = file
-    else uploadFile = new File([file as Blob], `avatar.webp`, { type: (file as Blob).type || 'image/webp' })
+    if (file instanceof File) {
+      uploadFile = file
+    } else {
+      // Determine file type - if it's from crop, it's JPEG, otherwise try to detect
+      const fileType = (file as Blob).type || 'image/jpeg'
+      const fileName = fileType.includes('webp') ? 'avatar.webp' : 'avatar.jpg'
+      uploadFile = new File([file as Blob], fileName, { type: fileType })
+    }
     fd.append('avatar', uploadFile)
 
-  const t = token || (user as any)?._token || (user as any)?.token || ''
-  const res = await fetch(`${API_BASE}/profiles/me/avatar`, { method: 'POST', headers: t ? { Authorization: `Bearer ${t}` } : undefined, body: fd })
+    const t = token || (user as any)?._token || (user as any)?.token || ''
+    const res = await fetch(`${API_BASE}/profiles/me/avatar`, {
+      method: 'POST',
+      headers: t ? { Authorization: `Bearer ${t}` } : undefined,
+      body: fd
+    })
+
     let j: any = null
     try {
       const ct = res.headers.get('content-type') || ''
-      if (ct.includes('application/json')) j = await res.json()
-      else {
+      if (ct.includes('application/json')) {
+        j = await res.json()
+      } else {
         const text = await res.text()
         throw new Error('Non-JSON response from /api/profiles/me/avatar: ' + text.slice(0, 500))
       }
     } catch (parseErr) {
       console.warn('Failed to parse JSON from /api/profiles/me/avatar', parseErr)
     }
-    if (!res.ok || !j || !j.success) throw new Error((j && j.message) ? j.message : 'Upload failed')
+
+    if (!res.ok || !j || !j.success) {
+      throw new Error((j && j.message) ? j.message : 'Upload failed')
+    }
+
     // server returns updated profile in j.data.profile
     return (j.data && j.data.profile && j.data.profile.avatar) ? j.data.profile.avatar : null
   }
@@ -540,7 +625,6 @@ export default function ProfilePage(): JSX.Element {
 
           {/* Right column - form */}
           <div className="md:w-2/3">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Profile</h2>
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Profile</h2>
@@ -548,7 +632,10 @@ export default function ProfilePage(): JSX.Element {
               </div>
               <div>
                 {isOwnProfile && (
-                  <button onClick={handleEdit} className="px-3 py-1 rounded-md border bg-white dark:bg-gray-700 text-sm">✏️ Edit Profile</button>
+                  <button onClick={handleEdit} className="px-3 py-1 rounded-md border bg-white dark:bg-gray-700 text-sm flex items-center gap-2">
+                    <Edit className="w-4 h-4" />
+                    Edit Profile
+                  </button>
                 )}
               </div>
             </div>
@@ -671,7 +758,7 @@ export default function ProfilePage(): JSX.Element {
             <h3 className="text-lg font-medium">Portfolio & Files</h3>
             <p className="text-sm text-gray-500">Upload supporting materials, resumes, session files or project artifacts.</p>
             <div className="mt-4">
-              <FileUpload onUploaded={(f) => { try { /* refresh gallery by re-rendering via key change */ } catch (e) {} }} multiple />
+              <FileUpload onUploaded={() => { window.location.reload() }} multiple />
               <FileGallery userId={(user && (user._id || user.id)) || ''} allowDelete />
             </div>
           </div>
@@ -695,6 +782,85 @@ export default function ProfilePage(): JSX.Element {
                 <button onClick={() => setIsEditing(false)} className="px-3 py-1 rounded border">Cancel</button>
                 <button onClick={handleSaveEdit} className="px-3 py-1 rounded bg-blue-600 text-white">{saving ? 'Saving…' : 'Save changes'}</button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Crop Modal */}
+      {showCropModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between sticky top-0 bg-white dark:bg-gray-800">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Crop Profile Photo</h2>
+              <button onClick={() => setShowCropModal(false)} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all">
+                <X className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              {imageToCrop && (
+                <>
+                  <div className="relative h-96 bg-gray-100 dark:bg-gray-700 rounded-xl overflow-hidden mb-6">
+                    <ReactEasyCrop
+                      image={imageToCrop}
+                      crop={crop}
+                      zoom={zoom}
+                      aspect={1 / 1}
+                      cropShape="round"
+                      showGrid={false}
+                      onCropChange={setCrop}
+                      onCropComplete={(croppedArea: any, croppedAreaPixels: any) => setCroppedArea(croppedAreaPixels)}
+                      onZoomChange={setZoom}
+                    />
+                  </div>
+
+                  <div className="space-y-4 mb-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Zoom</label>
+                      <div className="flex items-center gap-3">
+                        <ZoomOut className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                        <input
+                          type="range"
+                          min={1}
+                          max={3}
+                          step={0.1}
+                          value={zoom}
+                          onChange={(e) => setZoom(Number(e.target.value))}
+                          className="flex-1 h-2 bg-gray-300 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
+                        />
+                        <ZoomIn className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Current zoom: {zoom.toFixed(1)}x</p>
+                    </div>
+
+                    <div>
+                      <button
+                        onClick={() => { setZoom(1); setCrop({ x: 0, y: 0 }) }}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all text-sm font-medium"
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                        Reset
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setShowCropModal(false)}
+                      className="flex-1 px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSaveCroppedImage}
+                      className="flex-1 px-4 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium hover:shadow-lg transition-all duration-200"
+                    >
+                      Crop & Preview
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -21,31 +21,23 @@ export default function MentorFilters({ allSkills, filters, onChange }: Props) {
 
   return (
     <div className="space-y-3">
-      <div className="flex gap-2">
+      <div className="flex flex-col gap-2">
         <input
           value={filters.search}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange({ ...filters, search: e.target.value })}
-          placeholder="Search Senior Developers by name or skill"
-          className="flex-1 px-3 py-2 bg-white text-gray-800 border border-gray-200 rounded-md placeholder-gray-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:border-gray-600"
+          placeholder="Search Senior Developer"
+          className="w-full px-3 py-3 bg-white text-gray-800 border border-gray-200 rounded-md placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:placeholder-gray-400"
         />
         {/* level selector removed per request - filtering by experience level is no longer shown in the UI */}
         <select
           value={filters.providerType || 'all'}
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onChange({ ...filters, providerType: e.target.value as any })}
-          className="px-3 py-2 bg-white text-gray-800 border border-gray-200 rounded-md dark:bg-gray-700 dark:text-white dark:border-gray-600"
+          className="w-full px-3 py-2 bg-white text-gray-800 border border-gray-200 rounded-md dark:bg-gray-700 dark:text-white dark:border-gray-600"
         >
           <option value="all">Show all</option>
           <option value="mentor">Senior Developers only</option>
           <option value="junior">Junior Developers only</option>
         </select>
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={filters.availableOnly}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange({ ...filters, availableOnly: e.target.checked })}
-          />
-          <span className="text-sm text-gray-700 dark:text-white">Online now</span>
-        </label>
       </div>
 
       <div>

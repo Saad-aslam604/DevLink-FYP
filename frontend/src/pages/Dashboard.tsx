@@ -3,6 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import SessionBooking from '../components/SessionBooking'
 import DashboardOnboarding from '../components/UX/DashboardOnboarding'
+import KPICards from '../components/Dashboard/KPICards'
+import ActivityTimeline from '../components/Dashboard/ActivityTimeline'
+import { useDashboardData } from '../hooks/useDashboardData'
+import { LineChart as LineChartIcon, AlertCircle, CreditCard, Check, Calendar as CalendarIcon, Clock } from 'lucide-react'
 import {
   ResponsiveContainer,
   LineChart,
@@ -34,6 +38,9 @@ export default function Dashboard() {
   const { user } = useAuth() || {}
   const myId = user && (user._id || user.id || user?.uid) || null
   const navigate = useNavigate()
+
+  // NEW: Load analytics data
+  const { metrics, activityTimeline, loading: analyticsLoading, error: analyticsError } = useDashboardData()
 
   // If this account is an organization, redirect to the Organization Dashboard (UI-only guard)
   React.useEffect(() => {
@@ -254,21 +261,28 @@ export default function Dashboard() {
   const format = (v: number | null | undefined) => (v == null ? '' : String(Number(v) || 0))
 
   const finalUpcoming = useMemo(() => {
+    // Use hook metrics first (most reliable)
+    if (metrics && metrics.upcomingMeetings > 0) return metrics.upcomingMeetings
+    // Fallback to old sources
     if (upcomingCount != null) return upcomingCount
     if (Array.isArray(upcomingSessions) && upcomingSessions.length) return upcomingSessions.length
     if (analytics && analytics.upcoming && typeof analytics.upcoming === 'number') return analytics.upcoming
     if (quickStats && Number(quickStats.upcomingMeetings) > 0) return Number(quickStats.upcomingMeetings)
     return 0
-  }, [upcomingCount, upcomingSessions, analytics, quickStats])
+  }, [metrics, upcomingCount, upcomingSessions, analytics, quickStats])
 
   const finalUnreadMessages = useMemo(() => {
+    // Use hook metrics first (most reliable)
+    if (metrics && metrics.totalMessages > 0) return metrics.totalMessages
+    // Fallback to old sources
     if (unreadMessagesCount != null) return unreadMessagesCount
     if (quickStats && Number(quickStats.unreadMessages) > 0) return Number(quickStats.unreadMessages)
     if (analytics && typeof analytics.messages === 'number') return analytics.messages
     return 0
-  }, [unreadMessagesCount, quickStats, analytics])
+  }, [metrics, unreadMessagesCount, quickStats, analytics])
 
   const finalConnections = useMemo(() => {
+    // For connections, keep using old sources since hook returns 0 (user has no followers data)
     if (mentorConnectionsCount != null) return mentorConnectionsCount
     if (profile && typeof profile.connections === 'number') return profile.connections
     if (quickStats && Number(quickStats.mentorConnections) > 0) return Number(quickStats.mentorConnections)
@@ -276,10 +290,6 @@ export default function Dashboard() {
   }, [mentorConnectionsCount, profile, quickStats])
 
   const dataPresent = (Array.isArray(bookingsRaw) && bookingsRaw.length > 0) || (quickStats && Object.keys(quickStats).length > 0) || (Array.isArray(upcomingSessions) && upcomingSessions.length > 0) || (Array.isArray(sessions) && sessions.length > 0)
-
-  const displayUpcoming = dataPresent ? format(finalUpcoming) : ''
-  const displayMessages = dataPresent ? format(finalUnreadMessages) : ''
-  const displayConnections = dataPresent ? format(finalConnections) : ''
 
   useEffect(() => {
     if (!loadingAnalytics) {
@@ -507,33 +517,6 @@ export default function Dashboard() {
 
   const anyChartVisible = showDonut || showWeeklyLine || showMessagesBar
 
-  // Professional activity timeline inline component
-  const ProfessionalActivityTimeline = ({ items }: { items: any[] }) => (
-    <div className="bg-white rounded-2xl shadow-sm p-6 mb-6 dark:bg-gray-800 border border-gray-200/10 dark:border-gray-700">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Activity</h3>
-        <button className="text-sm text-blue-600">View all</button>
-      </div>
-      <div className="space-y-3">
-        {(!items || items.length === 0) ? (
-          <div className="text-sm text-gray-500">No recent activity</div>
-        ) : (
-          items.map((act) => (
-            <div key={act.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${act.color === 'green' ? 'bg-green-100' : (act.color === 'blue' ? 'bg-blue-100' : 'bg-gray-100')}`}>
-                <div className="text-sm font-medium text-gray-700">{act.icon === 'calendar-check' ? '📆' : (act.icon === 'message-square' ? '💬' : '•')}</div>
-              </div>
-              <div>
-                <div className="font-medium text-gray-900 dark:text-white">{act.title || act.text}</div>
-                {act.time ? <div className="text-sm text-gray-600">{act.time}</div> : null}
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-    </div>
-  )
-
   const UpcomingSessionsView = ({ sessions }: { sessions: any[] }) => (
     <div className="space-y-3">
       {(!sessions || sessions.length === 0) ? (
@@ -557,31 +540,24 @@ export default function Dashboard() {
   )
 
   return (
-    <div className="py-8 bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen">
+    <>
+    <div className="py-8 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 min-h-screen transition-colors duration-300">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <div className="rounded-2xl p-8 mb-6 bg-white shadow-xl border border-gray-100/50 backdrop-blur-sm">
+          <div className="rounded-2xl p-8 mb-6 bg-white dark:bg-gray-800 shadow-xl dark:shadow-2xl border border-gray-100/50 dark:border-gray-700/50 backdrop-blur-sm transition-colors duration-300">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-3xl font-bold text-gray-900 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent transition-colors duration-200">
                   Welcome back, {(profile && (profile.firstName || profile.name)) || 'there'}
                 </h2>
-                <p className="text-sm mt-2 text-gray-600">A quick view of your upcoming sessions and actions you can take.</p>
+                <p className="text-sm mt-2 text-gray-600 dark:text-gray-400 transition-colors duration-200">A quick view of your upcoming sessions and actions you can take.</p>
               </div>
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg dark:shadow-xl transition-all duration-200">
                 {(profile && (profile.firstName || profile.name)) ? (profile.firstName || profile.name).charAt(0).toUpperCase() : 'U'}
               </div>
             </div>
 
             {/* Invitation inbox has been moved to the header Organization Hub. */}
-
-            
-
-              <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-6">
-              <StatCard label="Upcoming Meetings" value={displayUpcoming !== '' ? displayUpcoming : '—'} />
-              <StatCard label="Messages" value={displayMessages !== '' ? displayMessages : '—'} />
-              <StatCard label="Senior Developer Connections" value={displayConnections !== '' ? displayConnections : '—'} />
-            </div>
 
             {onboardingVisible ? (
               <div className={`mt-6 relative transition-opacity duration-300 ${onboardingHiding ? 'opacity-0' : 'opacity-100'}`}>
@@ -634,102 +610,86 @@ export default function Dashboard() {
             </div>
             </div>
 
-              <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
-                <UpcomingSessionsView sessions={derivedUpcomingSessions || []} />
-                <ProfessionalActivityTimeline items={formattedActivities || []} />
+            {/* NEW: Analytics Dashboard Section */}
+            <div className="mt-8 border-t border-gray-200 dark:border-gray-700 pt-8 transition-colors duration-300">
+              <div className="mb-6 flex items-center gap-3">
+                <LineChartIcon className="w-6 h-6 text-blue-600 dark:text-blue-400 transition-colors duration-200" />
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 transition-colors duration-200">Your Analytics</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200">Track your engagement and activity metrics</p>
+                </div>
               </div>
 
-              <div>
-                <div className="mt-6 rounded-2xl p-6 bg-white dark:bg-gray-800 border border-gray-200/10 dark:border-gray-700">
-                  <h3 className="text-sm font-semibold mb-3 text-gray-900 dark:text-white">Activity</h3>
+              {analyticsError && (
+                <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-lg transition-colors duration-300 flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-200 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-amber-800 dark:text-amber-200 transition-colors duration-200">{analyticsError}</p>
+                </div>
+              )}
 
-                  <div className="grid grid-cols-1 gap-4">
-                    {/* Charts: Donut (completed vs pending), Line (weekly sessions), Bar (messages) */}
-                    {anyChartVisible ? (
-                      <>
-                        {showDonut && chartColors ? (
-                          <div className="rounded-lg p-3 bg-gray-50 dark:bg-gray-700">
-                            <div className="text-sm text-gray-600 dark:text-gray-300 mb-2">Sessions: completed vs pending</div>
-                            <div className="h-40" role="img" aria-label="Sessions completed vs pending">
-                              <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                  <Pie data={completedVsPending} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={30} outerRadius={48} paddingAngle={4}>
-                                    {completedVsPending.map((entry, idx) => (
-                                      <Cell key={idx} fill={chartColors[idx % chartColors.length]} />
-                                    ))}
-                                  </Pie>
-                                  <Tooltip formatter={(val: any) => [String(val), 'sessions']} />
-                                </PieChart>
-                              </ResponsiveContainer>
-                            </div>
-                          </div>
-                        ) : null}
+              <KPICards metrics={metrics} loading={analyticsLoading} />
+              <ActivityTimeline data={activityTimeline} loading={analyticsLoading} />
+            </div>
 
-                        {showWeeklyLine && chartColors ? (
-                          <div className="rounded-lg p-3 bg-gray-50 dark:bg-gray-700">
-                            <div className="text-sm text-gray-600 dark:text-gray-300 mb-2">Weekly sessions</div>
-                            <div className="h-36" role="img" aria-label="Weekly sessions">
-                              <ResponsiveContainer width="100%" height="100%">
-                                <LineChart data={weeklySessions} margin={{ top: 6, right: 6, left: -10, bottom: 0 }}>
-                                  <CartesianGrid strokeDasharray="3 3" stroke={gridStroke || undefined} />
-                                  <XAxis dataKey="week" tick={{ fontSize: 11 }} />
-                                  <YAxis />
-                                  <Tooltip />
-                                  <Line type="monotone" dataKey="sessions" stroke={chartColors[0]} strokeWidth={2} dot={false} />
-                                </LineChart>
-                              </ResponsiveContainer>
-                            </div>
-                          </div>
-                        ) : null}
+            <UpcomingSessionsView sessions={derivedUpcomingSessions || []} />
 
-                        {showMessagesBar && chartColors ? (
-                          <div className="rounded-lg p-3 bg-gray-50 dark:bg-gray-700">
-                            <div className="text-sm text-gray-600 dark:text-gray-300 mb-2">Messages (last 7 days)</div>
-                            <div className="h-36" role="img" aria-label="Messages per day">
-                              <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={messagesPerDay} margin={{ top: 6, right: 6, left: -10, bottom: 0 }}>
-                                  <CartesianGrid strokeDasharray="3 3" stroke={gridStroke || undefined} />
-                                  <XAxis dataKey="day" tick={{ fontSize: 11 }} />
-                                  <YAxis />
-                                  <Tooltip />
-                                  <Bar dataKey="count" fill={chartColors[2 % chartColors.length]} radius={[4,4,4,4]} />
-                                </BarChart>
-                              </ResponsiveContainer>
-                            </div>
-                          </div>
-                        ) : null}
-                      </>
-                    ) : (
-                      <div className="text-sm text-gray-600 dark:text-gray-300">No activity data to display.</div>
-                    )}
-                  </div>
-
-                  <div className="mt-4 border-t pt-4">
-                    <h4 className="text-sm font-semibold mb-3 text-gray-900 dark:text-white">Pending payments</h4>
-                    {bookingsRaw.filter(b => b && (b.status === 'pending' || b.paymentStatus === 'pending')).length === 0 ? (
-                      <div className="text-sm text-gray-600 dark:text-gray-300">No pending payments.</div>
-                    ) : (
-                      <div className="space-y-3">
-                        {bookingsRaw.filter(b => b && (b.status === 'pending' || b.paymentStatus === 'pending')).map((b: any) => (
-                          <div key={b._id} className="p-3 rounded-lg flex items-center justify-between bg-gray-50 dark:bg-gray-700">
-                            <div>
-                              <div className="font-medium text-gray-900 dark:text-white">{(b.mentor && (b.mentor.firstName || b.mentor.lastName)) ? `${b.mentor.firstName || ''} ${b.mentor.lastName || ''}`.trim() : 'Mentor'}</div>
-                              <div className="text-sm text-gray-600 dark:text-gray-300">{b.startTime ? new Date(b.startTime).toLocaleString() : 'No date'} • {b.price ? `$${(b.price/100).toFixed(2)}` : '-'}</div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <button onClick={() => navigate(`/app/checkout?bookingId=${b._id}`)} className="px-3 py-1 rounded-md bg-emerald-600 text-white text-sm">Pay now</button>
-                              <div className="text-xs text-gray-500 dark:text-gray-300">Pending</div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+            {/* Pending Payments Section */}
+            <div className="mt-8 rounded-2xl p-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg dark:shadow-xl transition-colors duration-300">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <CreditCard className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 transition-colors duration-200">Pending Payments</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 transition-colors duration-200">Complete your outstanding bookings</p>
                   </div>
                 </div>
               </div>
+
+              {bookingsRaw.filter(b => b && (b.status === 'pending' || b.paymentStatus === 'pending')).length === 0 ? (
+                <div className="text-center py-8">
+                  <Check className="w-12 h-12 text-green-600 dark:text-green-400 mx-auto mb-2" />
+                  <p className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-200">All payments are up to date!</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {bookingsRaw.filter(b => b && (b.status === 'pending' || b.paymentStatus === 'pending')).map((b: any, idx: number) => (
+                    <div key={b._id} className="group p-4 rounded-xl flex items-center justify-between bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-750 hover:from-amber-50 hover:to-orange-50 dark:hover:from-amber-900/20 dark:hover:to-orange-900/20 border border-gray-200 dark:border-gray-600 hover:border-amber-300 dark:hover:border-amber-600 transition-all duration-300 transform hover:scale-102">
+                      <div className="flex items-center gap-4 flex-1">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-md">
+                          {idx + 1}
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold text-gray-900 dark:text-gray-100 transition-colors duration-200">{(b.mentor && (b.mentor.firstName || b.mentor.lastName)) ? `${b.mentor.firstName || ''} ${b.mentor.lastName || ''}`.trim() : 'Mentor'}</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400 mt-1 transition-colors duration-200 flex items-center gap-3">
+                            <span className="flex items-center gap-1">
+                              <CalendarIcon className="w-4 h-4" />
+                              {b.startTime ? new Date(b.startTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'No date'}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-4 h-4" />
+                              {b.startTime ? new Date(b.startTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'N/A'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 ml-4">
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-amber-600 dark:text-amber-400 transition-colors duration-200">${b.price ? (b.price/100).toFixed(2) : '0.00'}</div>
+                          <div className="text-xs text-amber-600 dark:text-amber-500 font-medium transition-colors duration-200">Pending</div>
+                        </div>
+                        <button 
+                          onClick={() => navigate(`/app/checkout?bookingId=${b._id}`)} 
+                          className="px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-semibold text-sm shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105 whitespace-nowrap"
+                        >
+                          Pay Now
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-        </div>
+            </div>
 
         <aside>
           <div className="rounded-2xl p-6 sticky top-20 bg-white dark:bg-gray-800 border border-gray-200/10 dark:border-gray-700">
@@ -772,19 +732,9 @@ export default function Dashboard() {
         onClose={() => setBookingOpen(false)}
         onConfirm={(payload) => {
           setBookingOpen(false)
-          // navigate to confirmation page
-          navigate('/app/sessions/confirmation', { state: { booking: payload } })
         }}
       />
     </div>
-  )
-}
-
-function StatCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="group p-6 rounded-xl bg-gradient-to-br from-white to-gray-50 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100/50 hover:border-blue-200 transform hover:-translate-y-1">
-      <div className="text-sm font-medium text-gray-600 group-hover:text-blue-600 transition-colors">{label}</div>
-      <div className="text-3xl font-bold mt-2 text-gray-900 group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text group-hover:text-transparent transition-all">{value}</div>
-    </div>
+    </>
   )
 }

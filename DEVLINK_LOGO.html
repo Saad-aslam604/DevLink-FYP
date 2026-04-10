@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DevLink Logo - HTML/CSS Version</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f0f4f8 0%, #f9fafb 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+      padding: 20px;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* Icon styling */
+    .devlink-icon {
+      width: 56px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .devlink-icon::before {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      left: 8px;
+      top: 8px;
+    }
+
+    .devlink-icon::after {
+      content: '';
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      right: 6px;
+      bottom: 6px;
+    }
+
+    /* Text styling */
+    .devlink-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .devlink-name {
+      font-size: 28px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
+    }
+
+    .devlink-tagline {
+      font-size: 12px;
+      color: #6B7280;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    /* Full logo with horizontal layout */
+    .full-logo {
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Logo variations section */
+    .section {
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .section h3 {
+      color: #1F2937;
+      margin-bottom: 20px;
+      font-size: 16px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Icon only */
+    .icon-only {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .icon-variant {
+      width: 80px;
+      height: 80px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    }
+
+    .icon-circle {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 3px solid rgba(255, 255, 255, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      font-weight: bold;
+      color: white;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .devlink-name {
+        font-size: 24px;
+      }
+
+      .section {
+        min-width: 100%;
+      }
+    }
+
+    /* Color palette display */
+    .color-palette {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .color-swatch {
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+      color: white;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .color-blue { background: #3B82F6; }
+    .color-purple { background: #8B5CF6; }
+    .color-dark { background: #1E3A8A; }
+    .color-light { background: #C084FC; }
+  </style>
+</head>
+<body>
+  <!-- Full Logo -->
+  <div class="full-logo">
+    <div class="logo-container">
+      <div class="devlink-icon"></div>
+      <div class="devlink-text">
+        <span class="devlink-name">DevLink</span>
+        <span class="devlink-tagline">Developer Network</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Icon Variations -->
+  <div class="section">
+    <h3>Icon Variations</h3>
+    <div class="icon-only">
+      <div class="icon-variant">
+        <div style="width: 50px; height: 50px; border: 2px solid white; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+          <span style="color: white; font-weight: bold; font-size: 24px;">◐◑</span>
+        </div>
+      </div>
+      <div class="icon-variant">
+        <div class="icon-circle">DL</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Color Palette -->
+  <div class="section">
+    <h3>Color Palette</h3>
+    <div class="color-palette">
+      <div class="color-swatch color-blue">Blue<br>#3B82F6</div>
+      <div class="color-swatch color-purple">Purple<br>#8B5CF6</div>
+      <div class="color-swatch color-dark">Dark Blue<br>#1E3A8A</div>
+      <div class="color-swatch color-light">Light Purple<br>#C084FC</div>
+    </div>
+  </div>
+</body>
+</html>

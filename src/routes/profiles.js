@@ -5,6 +5,7 @@ const router = express.Router();
 const User = require('../models/User');
 const Booking = require('../models/Booking');
 const MentorApplication = require('../models/MentorApplication');
+const Portfolio = require('../models/Portfolio');
 const { protect } = require('../middleware/auth');
 const { handleValidationErrors } = require('../middleware/validation');
 const multer = require('multer')
@@ -116,6 +117,10 @@ router.put(
     body('certifications').optional().isArray(),
     body('availabilitySlots').optional().isArray(),
     body('isAvailable').optional().isBoolean(),
+    body('theme').optional().isString().isIn(['light', 'dark']),
+    body('emailVisible').optional().isBoolean(),
+    body('profileVisibility').optional().isString().isIn(['public', 'mentors', 'private']),
+    body('allowAnalytics').optional().isBoolean(),
   ],
   handleValidationErrors,
   async (req, res) => {
@@ -146,6 +151,10 @@ router.put(
         'isAvailable',
         'mentorBio',
         'expertiseAreas',
+        'theme',
+        'emailVisible',
+        'profileVisibility',
+        'allowAnalytics',
       ];
 
       // Build patch directly from incoming body to avoid depending on req.user being fully hydrated
@@ -377,6 +386,123 @@ router.get(
   }
 );
 
+// Portfolio endpoints - MUST come before /:userId catch-all route
+
+// GET /api/profiles/portfolio - get user's portfolio items
+router.get('/portfolio', protect, async (req, res) => {
+  try {
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ success: false, message: 'User not authenticated' });
+    }
+    
+    const userId = req.user._id;
+    const items = await Portfolio.find({ userId }).sort({ createdAt: -1 });
+    
+    return res.json({ success: true, data: { items } });
+  } catch (err) {
+    console.error('GET /profiles/portfolio error:', err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// POST /api/profiles/portfolio - add portfolio item
+router.post(
+  '/portfolio',
+  protect,
+  [
+    body('title').isString().trim().isLength({ min: 1, max: 200 }).withMessage('Title is required'),
+    body('description').optional().isString().trim().isLength({ max: 2000 }),
+    body('link').optional().isString().trim().isLength({ max: 500 }),
+  ],
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const userId = req.user._id;
+      const { title, description = '', link = '' } = req.body;
+
+      const item = new Portfolio({
+        userId,
+        title,
+        description,
+        link,
+      });
+
+      await item.save();
+
+      return res.status(201).json({
+        success: true,
+        message: 'Portfolio item added',
+        data: { item },
+      });
+    } catch (err) {
+      console.error('POST /profiles/portfolio error:', err);
+      return res.status(500).json({ success: false, message: 'Server error' });
+    }
+  }
+);
+
+// DELETE /api/profiles/portfolio/:id - delete portfolio item
+router.delete('/portfolio/:id', protect, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const itemId = req.params.id;
+
+    const item = await Portfolio.findOne({ _id: itemId, userId });
+    if (!item) {
+      return res.status(404).json({ success: false, message: 'Portfolio item not found' });
+    }
+
+    await Portfolio.deleteOne({ _id: itemId });
+
+    return res.json({
+      success: true,
+      message: 'Portfolio item deleted',
+    });
+  } catch (err) {
+    console.error('DELETE /profiles/portfolio/:id error:', err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// PUT /api/profiles/portfolio/:id - update portfolio item
+router.put(
+  '/portfolio/:id',
+  protect,
+  [
+    body('title').optional().isString().trim().isLength({ min: 1, max: 200 }),
+    body('description').optional().isString().trim().isLength({ max: 2000 }),
+    body('link').optional().isString().trim().isLength({ max: 500 }),
+  ],
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const userId = req.user._id;
+      const itemId = req.params.id;
+      const { title, description, link } = req.body;
+
+      const item = await Portfolio.findOne({ _id: itemId, userId });
+      if (!item) {
+        return res.status(404).json({ success: false, message: 'Portfolio item not found' });
+      }
+
+      if (title !== undefined) item.title = title;
+      if (description !== undefined) item.description = description;
+      if (link !== undefined) item.link = link;
+
+      await item.save();
+
+      return res.json({
+        success: true,
+        message: 'Portfolio item updated',
+        data: { item },
+      });
+    } catch (err) {
+      console.error('PUT /profiles/portfolio/:id error:', err);
+      return res.status(500).json({ success: false, message: 'Server error' });
+    }
+  }
+);
+
 // GET /api/profiles/:userId - public view of a profile
 router.get(
   '/:userId',
@@ -590,5 +716,44 @@ router.post(
     }
   }
 );
+
+// GET /api/profiles/blocked-users - protected (fetch list of blocked users)
+router.get('/blocked-users', protect, async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user) return res.status(401).json({ success: false, message: 'Unauthorized' });
+
+    const blockedUsers = await User.find({ _id: { $in: user.blockedUsers } })
+      .select('_id firstName lastName avatar email title')
+      .exec();
+
+    return res.json({ success: true, data: { blockedUsers } });
+  } catch (err) {
+    console.error('GET /blocked-users error:', err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// POST /api/profiles/unblock/:userId - protected (unblock a user)
+router.post('/unblock/:userId', protect, async (req, res) => {
+  try {
+    const user = req.user;
+    const userIdToUnblock = req.params.userId;
+    
+    if (!user) return res.status(401).json({ success: false, message: 'Unauthorized' });
+    if (!userIdToUnblock) return res.status(400).json({ success: false, message: 'User ID required' });
+
+    const updated = await User.findByIdAndUpdate(
+      user._id,
+      { $pull: { blockedUsers: userIdToUnblock } },
+      { new: true }
+    ).exec();
+
+    return res.json({ success: true, message: 'User unblocked', data: { user: publicProfile(updated) } });
+  } catch (err) {
+    console.error('POST /unblock error:', err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
 
 module.exports = router;

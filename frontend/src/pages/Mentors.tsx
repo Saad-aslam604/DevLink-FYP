@@ -187,10 +187,8 @@ export default function Mentors() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <aside className="lg:col-span-1">
-          <div className="sticky top-20">
-            <MentorFilters allSkills={allSkills} filters={filters} onChange={setFilters} />
-            <div className="mt-4 text-sm text-gray-500">Showing {filtered.length} Senior Developer{filtered.length !== 1 ? 's' : ''}</div>
-          </div>
+          <MentorFilters allSkills={allSkills} filters={filters} onChange={setFilters} />
+          <div className="mt-4 text-sm text-gray-500">Showing {filtered.length} Senior Developer{filtered.length !== 1 ? 's' : ''}</div>
         </aside>
 
         <main className="lg:col-span-3">

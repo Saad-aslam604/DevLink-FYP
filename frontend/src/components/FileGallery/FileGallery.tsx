@@ -22,18 +22,25 @@ export default function FileGallery({ userId, allowDelete = true }: { userId: st
   const fetchFiles = async () => {
     setLoading(true); setError(null)
     try {
-      const token = localStorage.getItem('devlink_token')
-      const res = await fetch(`${API_BASE}/uploads/files/user/${encodeURIComponent(userId)}`, { headers: token ? { Authorization: `Bearer ${token}` } : undefined })
+      const token = localStorage.getItem('devlink_token') || localStorage.getItem('token')
+      const url = `${API_BASE}/uploads/files/user/${encodeURIComponent(userId)}`
+      console.log('📁 Fetching files from:', url, 'with token:', !!token)
+      const res = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : undefined })
       const j = await res.json().catch(() => null)
+      console.log('📁 Files response:', res.status, j)
       if (!res.ok || !j || !j.success) {
-        setError('Failed to load files')
-        try { toast.show('Failed to load files', 'error') } catch (e) {}
+        const msg = j?.message || 'Failed to load files'
+        setError(msg)
+        try { toast.show(msg, 'error') } catch (e) {}
         setLoading(false)
         return
       }
+      console.log('✅ Loaded', (j.data.files || []).length, 'files')
       setFiles(j.data.files || [])
     } catch (e: any) {
-      setError(e.message || String(e))
+      const msg = e.message || String(e)
+      setError(msg)
+      console.error('❌ Fetch files error:', msg)
       try { toast.show('Failed to load files', 'error') } catch (e) {}
     } finally { setLoading(false) }
   }
@@ -45,9 +52,12 @@ export default function FileGallery({ userId, allowDelete = true }: { userId: st
       // optimistic UI: remove locally first for snappy feel
       const prev = files
       setFiles(prev => prev.filter(f => f._id !== fileId))
-      const token = localStorage.getItem('devlink_token')
-      const res = await fetch(`${API_BASE}/uploads/files/${encodeURIComponent(fileId)}`, { method: 'DELETE', headers: token ? { Authorization: `Bearer ${token}` } : undefined })
+      const token = localStorage.getItem('devlink_token') || localStorage.getItem('token')
+      const url = `${API_BASE}/uploads/files/${encodeURIComponent(fileId)}`
+      console.log('📁 Deleting file:', url)
+      const res = await fetch(url, { method: 'DELETE', headers: token ? { Authorization: `Bearer ${token}` } : undefined })
       const j = await res.json().catch(() => null)
+      console.log('📁 Delete response:', res.status, j)
       if (!res.ok || !j || !j.success) {
         setError('Failed to delete file')
         try { toast.show('Failed to delete file', 'error') } catch (e) {}
@@ -56,7 +66,10 @@ export default function FileGallery({ userId, allowDelete = true }: { userId: st
         return
       }
       try { toast.show('File deleted', 'success') } catch (e) {}
-    } catch (e: any) { setError(e.message || String(e)) }
+    } catch (e: any) { 
+      setError(e.message || String(e))
+      console.error('❌ Delete error:', e)
+    }
   }
 
   if (!userId) return null

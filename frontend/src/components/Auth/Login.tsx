@@ -1,12 +1,14 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { Eye, EyeOff } from 'lucide-react'
 import GoogleSignIn from './GoogleSignIn'
 
 export default function Login() {
   const { signIn } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
@@ -40,16 +42,25 @@ export default function Login() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Password</label>
-          <div className="mt-3 text-right">
-            <a className="text-sm text-indigo-600 hover:underline" href="/forgot-password">Forgot password?</a>
-          </div>
-            <input
-              type="password"
-              className="mt-1 block w-full rounded-md border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-400 p-2"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <div className="mt-3 text-right">
+              <a className="text-sm text-indigo-600 hover:underline" href="/forgot-password">Forgot password?</a>
+            </div>
+            <div className="relative mt-1">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                className="block w-full rounded-md border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-400 p-2 pr-10"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           <button

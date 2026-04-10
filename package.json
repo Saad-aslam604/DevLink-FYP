@@ -4,13 +4,13 @@
   "description": "DevLink backend (Express + MongoDB + JWT)",
   "main": "src/index.js",
   "scripts": {
-  "start": "node src/index.js",
-  "dev": "nodemon src/index.js",
-  "e2e:smoke": "node ./scripts/e2e-smoke.js",
-  "backup": "powershell -NoProfile -ExecutionPolicy Bypass -File ./backup-project.ps1",
-  "migrate:create-profiles": "node ./scripts/create-profiles-from-users.js",
-  "test:realtime": "node ./scripts/run-realtime-tests.js",
-  "migrate:fix-messages": "node ./scripts/fix-messages.js"
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "e2e:smoke": "node ./scripts/e2e-smoke.js",
+    "backup": "powershell -NoProfile -ExecutionPolicy Bypass -File ./backup-project.ps1",
+    "migrate:create-profiles": "node ./scripts/create-profiles-from-users.js",
+    "test:realtime": "node ./scripts/run-realtime-tests.js",
+    "migrate:fix-messages": "node ./scripts/fix-messages.js"
   },
   "author": "",
   "license": "MIT",
@@ -27,6 +27,7 @@
     "mongoose": "^7.3.1",
     "morgan": "^1.10.1",
     "multer": "^1.4.5-lts.1",
+    "nodemailer": "^8.0.4",
     "socket.io": "^4.8.1",
     "stripe": "^12.12.0"
   },

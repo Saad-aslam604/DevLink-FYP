@@ -150,6 +150,11 @@ const UserSchema = new mongoose.Schema(
       contactEmail: { type: String, default: '' },
       description: { type: String, default: '' },
     },
+    // User preferences
+    theme: { type: String, default: 'light', enum: ['light', 'dark'] },
+    emailVisible: { type: Boolean, default: true },
+    profileVisibility: { type: String, default: 'public', enum: ['public', 'mentors', 'private'] },
+    allowAnalytics: { type: Boolean, default: true },
   },
   {
     timestamps: true,

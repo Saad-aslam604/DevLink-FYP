@@ -2,6 +2,11 @@
 import React from 'react'
 import { Routes, Route } from 'react-router-dom'
 import LandingPage from './pages/LandingPage'
+import PricingPage from './pages/PricingPage'
+import AboutPage from './pages/AboutPage'
+import BlogPage from './pages/BlogPage'
+import CareersPage from './pages/CareersPage'
+import PrivacyPage from './pages/PrivacyPage'
 import Home from './pages/Home'
 import TestSocket from './pages/TestSocket'
 import MonacoTest from './pages/MonacoTest'
@@ -42,6 +47,11 @@ export default function App() {
       <ToastProvider>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/careers" element={<CareersPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

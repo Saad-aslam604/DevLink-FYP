@@ -43,32 +43,49 @@ export default function FileUpload({ onUploaded, multiple = false }: { onUploade
     xhr.onload = () => {
       setProgress(null)
       setUploading(false)
+      console.log('📁 Upload response:', xhr.status, xhr.responseText)
       if (xhr.status >= 200 && xhr.status < 300) {
         try {
           const j = JSON.parse(xhr.responseText)
+          console.log('📁 Parsed response:', j)
           if (j && j.success && j.data && j.data.file) {
+            console.log('✅ Upload successful')
             onUploaded && onUploaded(j.data.file)
             try { toast.show('Upload successful', 'success') } catch (e) {}
           } else {
-            setError('Upload failed')
-            try { toast.show('Upload failed', 'error') } catch (e) {}
+            setError('Upload failed: ' + (j?.message || 'unknown error'))
+            try { toast.show('Upload failed: ' + (j?.message || 'unknown error'), 'error') } catch (e) {}
           }
         } catch (e) {
+          console.error('❌ Upload response parse error:', e)
           setError('Upload response parse error')
           try { toast.show('Upload response parse error', 'error') } catch (e) {}
         }
       } else {
+        console.error('❌ Upload failed with status:', xhr.status)
         setError('Upload failed: ' + xhr.statusText)
-        try { toast.show('Upload failed', 'error') } catch (e) {}
+        try { toast.show('Upload failed: ' + xhr.statusText, 'error') } catch (e) {}
       }
     }
 
-    xhr.onerror = () => { setProgress(null); setUploading(false); setError('Upload network error'); try { toast.show('Upload network error', 'error') } catch (e) {} }
+    xhr.onerror = () => { 
+      setProgress(null)
+      setUploading(false)
+      setError('Upload network error')
+      console.error('❌ Upload network error')
+      try { toast.show('Upload network error', 'error') } catch (e) {} 
+    }
 
     // Attach Authorization header from localStorage token if present
-    const token = localStorage.getItem('devlink_token')
-    xhr.open('POST', (import.meta.env.VITE_API_BASE || '/api') + '/uploads/upload', true)
-    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+    const token = localStorage.getItem('devlink_token') || localStorage.getItem('token')
+    const apiBase = (import.meta.env.VITE_API_BASE || '/api')
+    const uploadUrl = `${apiBase}/uploads/upload`
+    console.log('📁 Uploading to:', uploadUrl, 'with token:', !!token)
+    xhr.open('POST', uploadUrl, true)
+    if (token) {
+      xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+      console.log('📁 Auth header set')
+    }
     xhr.send(fd)
   }, [onUploaded, toast])
 

@@ -81,17 +81,6 @@ const MessageInputWrapper: React.FC<Props> = ({ onSubmit, children, disabled = f
           )}
         </div>
       </div>
-      <button
-        type="submit"
-        disabled={!!disabled}
-        className={`p-2 rounded-full transition-colors ${disabled ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
-        aria-disabled={!!disabled}
-      >
-        {/* simple send icon (paper plane) */}
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-          <path d="M2.94 2.94a1.5 1.5 0 012.12 0l11 11a1.5 1.5 0 01-1.06 2.56H6.5a1 1 0 01-1-1V6.06a1.5 1.5 0 011-1.06z" />
-        </svg>
-      </button>
 
       {/* uploader markup moved above and anchored to the attach button wrapper */}
     </form>

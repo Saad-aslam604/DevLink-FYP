@@ -168,7 +168,12 @@ router.post('/', protect, async (req, res) => {
 
     // Check conflicts
     try {
-      const conflict = await Booking.findOne({ mentor: mentorIdFinal, status: { $in: ['pending', 'confirmed'] }, $or: [{ startTime: { $lt: e }, endTime: { $gt: s } }] });
+      const conflict = await Booking.findOne({ 
+        mentor: mentorIdFinal, 
+        status: { $in: ['pending', 'confirmed'] }, 
+        startTime: { $lt: e }, 
+        endTime: { $gt: s } 
+      });
       if (conflict) {
         console.log('❌ Mentor conflict for requested slot:', conflict._id.toString());
         return res.status(409).json({ success: false, message: 'Mentor is not available during requested time' });

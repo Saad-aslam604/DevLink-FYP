@@ -1,10 +1,21 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Users, Code, Video, MessageCircle, Star, CheckCircle, Zap, Shield, Globe, Menu, X, ChevronDown } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // Handle Browse Mentors - redirect to login if not authenticated
+  const handleBrowseMentors = () => {
+    if (!user) {
+      navigate('/login');
+    } else {
+      navigate('/app/mentors');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -20,9 +31,24 @@ export default function LandingPage() {
             </Link>
             
             <div className="hidden md:flex items-center gap-8">
-              <Link to="#features" className="text-gray-600 hover:text-gray-900 transition">Features</Link>
-              <Link to="#how-it-works" className="text-gray-600 hover:text-gray-900 transition">How It Works</Link>
-              <Link to="#testimonials" className="text-gray-600 hover:text-gray-900 transition">Testimonials</Link>
+              <button 
+                onClick={() => window.scrollTo({ top: document.getElementById('features')?.offsetTop || 0, behavior: 'smooth' })}
+                className="text-gray-600 hover:text-gray-900 transition cursor-pointer"
+              >
+                Features
+              </button>
+              <button 
+                onClick={() => window.scrollTo({ top: document.getElementById('how-it-works')?.offsetTop || 0, behavior: 'smooth' })}
+                className="text-gray-600 hover:text-gray-900 transition cursor-pointer"
+              >
+                How It Works
+              </button>
+              <button 
+                onClick={() => window.scrollTo({ top: document.getElementById('testimonials')?.offsetTop || 0, behavior: 'smooth' })}
+                className="text-gray-600 hover:text-gray-900 transition cursor-pointer"
+              >
+                Testimonials
+              </button>
               <Link to="/login" className="text-gray-600 hover:text-gray-900 transition">Sign In</Link>
               <Link 
                 to="/signup" 
@@ -45,9 +71,33 @@ export default function LandingPage() {
         {mobileMenuOpen && (
           <div className="md:hidden bg-white border-t border-gray-200">
             <div className="px-4 py-4 space-y-3">
-              <Link to="#features" className="block text-gray-600 hover:text-gray-900 transition">Features</Link>
-              <Link to="#how-it-works" className="block text-gray-600 hover:text-gray-900 transition">How It Works</Link>
-              <Link to="#testimonials" className="block text-gray-600 hover:text-gray-900 transition">Testimonials</Link>
+              <button 
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  window.scrollTo({ top: document.getElementById('features')?.offsetTop || 0, behavior: 'smooth' });
+                }}
+                className="block text-gray-600 hover:text-gray-900 transition w-full text-left"
+              >
+                Features
+              </button>
+              <button 
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  window.scrollTo({ top: document.getElementById('how-it-works')?.offsetTop || 0, behavior: 'smooth' });
+                }}
+                className="block text-gray-600 hover:text-gray-900 transition w-full text-left"
+              >
+                How It Works
+              </button>
+              <button 
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  window.scrollTo({ top: document.getElementById('testimonials')?.offsetTop || 0, behavior: 'smooth' });
+                }}
+                className="block text-gray-600 hover:text-gray-900 transition w-full text-left"
+              >
+                Testimonials
+              </button>
               <Link to="/login" className="block text-gray-600 hover:text-gray-900 transition">Sign In</Link>
               <Link 
                 to="/signup" 
@@ -85,13 +135,13 @@ export default function LandingPage() {
                 Get Started Free
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Link>
-              <Link
-                to="/app/mentors"
-                className="inline-flex items-center px-8 py-4 bg-white text-gray-900 font-semibold rounded-lg border border-gray-300 hover:bg-gray-50 transition-all shadow-md"
+              <button
+                onClick={handleBrowseMentors}
+                className="inline-flex items-center justify-center px-8 py-4 bg-white text-gray-900 font-semibold rounded-lg border border-gray-300 hover:bg-gray-50 transition-all shadow-md hover:shadow-lg cursor-pointer"
               >
                 Browse Mentors
                 <Users className="ml-2 w-5 h-5" />
-              </Link>
+              </button>
             </div>
             
             {/* Floating elements for visual interest */}
@@ -222,17 +272,17 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               to="/signup"
-              className="inline-flex items-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-100 transition-all transform hover:scale-105 shadow-lg"
+              className="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-100 transition-all transform hover:scale-105 shadow-lg"
             >
               Start Free Trial
               <ArrowRight className="ml-2 w-5 h-5" />
             </Link>
-            <Link
-              to="/app/become-mentor"
-              className="inline-flex items-center px-8 py-4 bg-transparent text-white font-semibold rounded-lg border-2 border-white hover:bg-white hover:text-blue-600 transition-all"
+            <button
+              onClick={() => navigate(user ? '/app/become-mentor' : '/signup?role=mentor')}
+              className="inline-flex items-center justify-center px-8 py-4 bg-transparent text-white font-semibold rounded-lg border-2 border-white hover:bg-white hover:text-blue-600 transition-all cursor-pointer"
             >
               Become a Mentor
-            </Link>
+            </button>
           </div>
         </div>
       </section>
@@ -254,27 +304,30 @@ export default function LandingPage() {
             <div>
               <h4 className="text-white font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-sm">
-                <li><button onClick={() => navigate('/app#features')} className="hover:text-white transition">Features</button></li>
-                <li><span className="text-gray-400">Pricing (Coming Soon)</span></li>
-                <li><Link to="/app/mentors" className="hover:text-white transition">Find Mentors</Link></li>
+                <li><button onClick={() => {
+                  setMobileMenuOpen(false);
+                  window.scrollTo({ top: document.getElementById('features')?.offsetTop || 0, behavior: 'smooth' });
+                }} className="hover:text-white transition cursor-pointer">Features</button></li>
+                <li><Link to="/pricing" className="hover:text-white transition">Pricing</Link></li>
+                <li><button onClick={handleBrowseMentors} className="hover:text-white transition cursor-pointer">Find Mentors</button></li>
               </ul>
             </div>
             
             <div>
               <h4 className="text-white font-semibold mb-4">Company</h4>
               <ul className="space-y-2 text-sm">
-                <li><span className="text-gray-400">About (Coming Soon)</span></li>
-                <li><span className="text-gray-400">Blog (Coming Soon)</span></li>
-                <li><span className="text-gray-400">Careers (Coming Soon)</span></li>
+                <li><Link to="/about" className="hover:text-white transition">About</Link></li>
+                <li><Link to="/blog" className="hover:text-white transition">Blog</Link></li>
+                <li><Link to="/careers" className="hover:text-white transition">Careers</Link></li>
               </ul>
             </div>
             
             <div>
               <h4 className="text-white font-semibold mb-4">Support</h4>
               <ul className="space-y-2 text-sm">
-                <li><Link to="/app/help" className="hover:text-white transition">Help Center</Link></li>
-                <li><Link to="/app/contact" className="hover:text-white transition">Contact</Link></li>
-                <li><span className="text-gray-400">Privacy (Coming Soon)</span></li>
+                <li><button onClick={() => navigate('/help')} className="hover:text-white transition cursor-pointer">Help Center</button></li>
+                <li><button onClick={() => navigate('/contact')} className="hover:text-white transition cursor-pointer">Contact</button></li>
+                <li><Link to="/privacy" className="hover:text-white transition">Privacy</Link></li>
               </ul>
             </div>
           </div>

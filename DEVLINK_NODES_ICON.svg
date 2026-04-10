@@ -1,0 +1,23 @@
+<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" width="120" height="120">
+  <defs>
+    <linearGradient id="nodeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Left node -->
+  <circle cx="30" cy="60" r="20" fill="#3B82F6"/>
+  
+  <!-- Right node -->
+  <circle cx="90" cy="60" r="20" fill="#8B5CF6"/>
+  
+  <!-- Connection line -->
+  <line x1="50" y1="60" x2="70" y2="60" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Top curve line -->
+  <path d="M 40 40 Q 60 20 80 40" stroke="url(#nodeGrad)" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.6"/>
+  
+  <!-- Bottom curve line -->
+  <path d="M 40 80 Q 60 100 80 80" stroke="url(#nodeGrad)" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.6"/>
+</svg>
