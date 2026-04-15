@@ -45,6 +45,42 @@ export default function Settings() {
 
   useEffect(() => {
     if (!user) return
+    
+    // Refresh profile from server to ensure we have the latest avatar and data
+    const refreshProfile = async () => {
+      try {
+        const token = localStorage.getItem('devlink_token')
+        if (!token) return
+        
+        const res = await fetch(`${API_BASE}/profiles/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        
+        if (res.ok) {
+          const j = await res.json()
+          if (j.data && j.data.profile) {
+            const profile = j.data.profile
+            const firstName = (profile.firstName || profile.name || '').toString()
+            const lastName = (profile.lastName || '').toString()
+            const fullName = [firstName, lastName].filter(Boolean).join(' ').trim()
+            setName(fullName || '')
+            setTitle((profile.title || '') as string)
+            setBio((profile.bio || '') as string)
+            // Ensure avatar URL is absolute to avoid cache issues
+            const avatarUrl = profile.avatar ? (profile.avatar.startsWith('http') ? profile.avatar : `${window.location.origin}${profile.avatar.startsWith('/') ? '' : '/'}${profile.avatar}`) : ''
+            setAvatar(avatarUrl)
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to refresh profile', e)
+      }
+    }
+    
+    refreshProfile()
+  }, [user, API_BASE])
+
+  useEffect(() => {
+    if (!user) return
   // user may be a profile object returned from /profiles/me or auth user shape
   const firstName = (user.firstName || user.name || '').toString()
     const lastName = (user.lastName || '').toString()
@@ -52,7 +88,8 @@ export default function Settings() {
     setName(fullName || '')
     setTitle((user.title || '') as string)
     setBio((user.bio || '') as string)
-    setAvatar((user.avatar || '') as string)
+    const avatarUrl = user.avatar ? (user.avatar.startsWith('http') ? user.avatar : `${window.location.origin}${user.avatar.startsWith('/') ? '' : '/'}${user.avatar}`) : ''
+    setAvatar(avatarUrl)
   }, [user])
 
   // Fetch recent mentors from API
@@ -249,12 +286,28 @@ export default function Settings() {
 
       const newAvatar = j.data && j.data.profile ? j.data.profile.avatar : j.data && j.data.avatar
       if (newAvatar) {
-        setAvatar(newAvatar)
+        // Convert relative path to absolute URL to avoid cache issues
+        const absoluteAvatar = newAvatar.startsWith('http') ? newAvatar : `${window.location.origin}${newAvatar.startsWith('/') ? '' : '/'}${newAvatar}`
+        setAvatar(absoluteAvatar)
         // Sync to AuthContext so the global user state is updated
         try {
-          await updateProfile({ avatar: newAvatar })
+          await updateProfile({ avatar: absoluteAvatar })
         } catch (e) {
           console.warn('updateProfile sync failed', e)
+        }
+        // Force refresh of user profile to ensure avatar persists after reload
+        try {
+          const profileRes = await fetch(`${API_BASE}/auth/me`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+          })
+          if (profileRes.ok) {
+            const profileData = await profileRes.json()
+            if (profileData.data && profileData.data.user) {
+              await updateProfile({ ...profileData.data.user })
+            }
+          }
+        } catch (e) {
+          console.warn('Failed to refresh profile data', e)
         }
       }
 

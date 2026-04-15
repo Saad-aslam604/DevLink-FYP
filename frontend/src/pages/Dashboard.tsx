@@ -323,6 +323,7 @@ export default function Dashboard() {
 
   const [bookingOpen, setBookingOpen] = useState(false)
   const [bookingLoading, setBookingLoading] = useState(false)
+  const [showFindMentorModal, setShowFindMentorModal] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem('devlink_token')
@@ -395,7 +396,7 @@ export default function Dashboard() {
     load()
   }, [API_BASE])
 
-  function openBookingModal() { setBookingLoading(true); setTimeout(() => { setBookingLoading(false); setBookingOpen(true) }, 150) }
+  function openBookingModal() { setShowFindMentorModal(true) }
   function handleFindMentors() { navigate('/app/mentors') }
   function handleMessages() { navigate('/app/messages') }
 
@@ -726,6 +727,45 @@ export default function Dashboard() {
           </div>
         </aside>
       </div>
+      
+      {/* Find Senior Developer Modal */}
+      {showFindMentorModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-8 transform transition-all">
+            <div className="text-center">
+              <div className="mb-4 flex justify-center">
+                <div className="bg-blue-100 dark:bg-blue-900 rounded-full p-4">
+                  <svg className="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Schedule a Meeting</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                You need to find a Senior Developer first to schedule a meeting. Browse our available senior developers and select one.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => {
+                  setShowFindMentorModal(false)
+                  navigate('/app/mentors')
+                }}
+                className="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
+              >
+                Browse Senior Developers
+              </button>
+              <button
+                onClick={() => setShowFindMentorModal(false)}
+                className="w-full px-6 py-3 rounded-xl bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       <SessionBooking
         open={bookingOpen}

@@ -443,7 +443,13 @@ export default function ProfilePage(): JSX.Element {
     }
 
     // server returns updated profile in j.data.profile
-    return (j.data && j.data.profile && j.data.profile.avatar) ? j.data.profile.avatar : null
+    const avatarPath = (j.data && j.data.profile && j.data.profile.avatar) ? j.data.profile.avatar : null
+    // Convert relative path to absolute URL to avoid cache issues
+    if (avatarPath) {
+      const absoluteUrl = avatarPath.startsWith('http') ? avatarPath : `${window.location.origin}${avatarPath.startsWith('/') ? '' : '/'}${avatarPath}`
+      return absoluteUrl
+    }
+    return null
   }
   async function handleSave() {
     if (!user) return
@@ -460,6 +466,20 @@ export default function ProfilePage(): JSX.Element {
           finalAvatarUrl = publicUrl as string
           // sync to AuthContext early so other parts of the UI update
           try { await updateProfile({ avatar: finalAvatarUrl }) } catch (e) { console.warn('updateProfile avatar sync failed', e) }
+          // Force refresh from server to ensure avatar persists after reload
+          try {
+            const profileRes = await fetch(`${API_BASE}/auth/me`, {
+              headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+            })
+            if (profileRes.ok) {
+              const profileData = await profileRes.json()
+              if (profileData.data && profileData.data.user) {
+                await updateProfile({ ...profileData.data.user })
+              }
+            }
+          } catch (e) {
+            console.warn('Failed to refresh profile data after avatar upload', e)
+          }
         } catch (upErr: any) {
           setError('Failed to upload avatar: ' + (upErr.message ?? String(upErr)))
           setUploadingAvatar(false)
