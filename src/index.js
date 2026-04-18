@@ -212,6 +212,10 @@ try { app.use('/api/organization', require('./routes/organization')) } catch (e)
 try { app.use('/api/tasks', require('./routes/tasks')) } catch (e) { console.warn('Tasks route not available:', e && e.message ? e.message : e) }
 // Payments (Stripe integration)
 app.use('/api/payments', require('./routes/payments'));
+// Ratings for mentors/senior developers
+try { app.use('/api/ratings', require('./routes/ratings')) } catch (e) { console.warn('Ratings route not available:', e && e.message ? e.message : e) }
+// Withdrawals for mentor earnings
+try { app.use('/api/withdrawals', require('./routes/withdrawals')) } catch (e) { console.warn('Withdrawals route not available:', e && e.message ? e.message : e) }
 
 // Mount admin routes
 app.use('/api/admin', require('./routes/admin'));
