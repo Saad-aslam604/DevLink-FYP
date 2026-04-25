@@ -36,5 +36,14 @@
     "node-fetch": "^2.7.0",
     "nodemon": "^2.0.22",
     "socket.io-client": "^4.8.1"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "frontend/*",
+      "*.log",
+      "uploads/*",
+      "test-*.js"
+    ],
+    "delay": 1000
   }
 }

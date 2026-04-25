@@ -9,6 +9,11 @@ const connectDB = async (uri) => {
     process.exit(1);
   }
 
+  // Disable mongoose debug logging in production and development (reduces console noise)
+  if (process.env.NODE_ENV !== 'production') {
+    mongoose.set('debug', false);
+  }
+
   // Mongoose connection options
   const opts = {
     // use the new url parser and unified topology

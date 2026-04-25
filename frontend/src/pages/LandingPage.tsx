@@ -18,6 +18,24 @@ export default function LandingPage() {
     }
   };
 
+  // Handle Become Mentor - redirect to login first if not authenticated
+  const handleBecomeMentor = () => {
+    if (!user) {
+      navigate('/login');
+    } else {
+      navigate('/app/become-mentor');
+    }
+  };
+
+  // Handle Get Started - redirect to signup or dashboard
+  const handleGetStarted = () => {
+    if (user) {
+      navigate('/app/dashboard');
+    } else {
+      navigate('/signup');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Navigation Header */}
@@ -124,13 +142,13 @@ export default function LandingPage() {
               real-time video calls, and collaborative project work.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                to="/signup"
-                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg"
+              <button
+                onClick={handleGetStarted}
+                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg cursor-pointer"
               >
                 Get Started Free
                 <ArrowRight className="ml-2 w-5 h-5" />
-              </Link>
+              </button>
               <button
                 onClick={handleBrowseMentors}
                 className="inline-flex items-center justify-center px-8 py-4 bg-white text-gray-900 font-semibold rounded-lg border border-gray-300 hover:bg-gray-50 transition-all shadow-md hover:shadow-lg cursor-pointer"
@@ -235,23 +253,101 @@ export default function LandingPage() {
           
           <div className="grid md:grid-cols-3 gap-8">
             <TestimonialCard
-              name="Sarah Chen"
-              role="Junior Developer"
-              content="DevLink helped me land my first job! The mentorship I received was invaluable."
+              name="Junior Developer"
+              role=""
+              content="The platform helped me grow!"
               rating={5}
             />
             <TestimonialCard
-              name="Michael Rodriguez"
-              role="Senior Developer"
-              content="I love mentoring on DevLink. It's rewarding to help the next generation of developers."
+              name="Senior Developer"
+              role=""
+              content="Great experience mentoring!"
               rating={5}
             />
             <TestimonialCard
-              name="Emily Johnson"
-              role="Frontend Developer"
-              content="The live coding sessions are amazing. I can learn in real-time with expert guidance."
+              name="Frontend Developer"
+              role=""
+              content="Love the live coding feature!"
               rating={5}
             />
+          </div>
+        </div>
+      </section>
+
+      {/* Careers Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Join Our Team</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              We're building the future of developer mentorship. Help us transform how developers learn and grow together.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            <div className="p-8 bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all">
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Software Developer</h3>
+              <p className="text-gray-600 mb-4">Full Stack • Remote • Competitive Salary</p>
+              <p className="text-gray-700 mb-6">Help build scalable features for our mentorship platform. Work with modern tech stack and passionate developers.</p>
+              <div className="flex items-center text-blue-600 font-semibold group cursor-pointer hover:text-blue-700">
+                Learn More <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition" />
+              </div>
+            </div>
+
+            <div className="p-8 bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all">
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Product Manager</h3>
+              <p className="text-gray-600 mb-4">Product Strategy • Remote • Competitive Salary</p>
+              <p className="text-gray-700 mb-6">Shape the future of DevLink. Drive product strategy and lead initiatives that impact thousands of developers.</p>
+              <div className="flex items-center text-blue-600 font-semibold group cursor-pointer hover:text-blue-700">
+                Learn More <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition" />
+              </div>
+            </div>
+
+            <div className="p-8 bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all">
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Community Manager</h3>
+              <p className="text-gray-600 mb-4">Community • Remote • Competitive Salary</p>
+              <p className="text-gray-700 mb-6">Build and nurture our developer community. Connect mentors and mentees, organize events, and foster engagement.</p>
+              <div className="flex items-center text-blue-600 font-semibold group cursor-pointer hover:text-blue-700">
+                Learn More <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-12 border border-blue-100">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">What We Offer</h3>
+            <div className="grid md:grid-cols-2 gap-6 mb-8">
+              <div className="flex items-start gap-4">
+                <CheckCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
+                <div>
+                  <p className="font-semibold text-gray-900">Competitive Compensation</p>
+                  <p className="text-gray-600">Market-competitive salary and benefits package</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <CheckCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
+                <div>
+                  <p className="font-semibold text-gray-900">Remote Work</p>
+                  <p className="text-gray-600">100% flexible remote work opportunities</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <CheckCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
+                <div>
+                  <p className="font-semibold text-gray-900">Professional Development</p>
+                  <p className="text-gray-600">Learning budget and growth opportunities</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <CheckCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
+                <div>
+                  <p className="font-semibold text-gray-900">Health & Wellness</p>
+                  <p className="text-gray-600">Comprehensive health and wellness benefits</p>
+                </div>
+              </div>
+            </div>
+            <p className="text-center text-gray-700">
+              Interested in joining our team? <a href="mailto:careers@devlink.com" className="font-semibold text-blue-600 hover:text-blue-700 transition">Contact us at careers@devlink.com</a>
+            </p>
           </div>
         </div>
       </section>
@@ -266,15 +362,15 @@ export default function LandingPage() {
             Join thousands of developers already growing with DevLink
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/signup"
-              className="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-100 transition-all transform hover:scale-105 shadow-lg"
+            <button
+              onClick={handleGetStarted}
+              className="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-100 transition-all transform hover:scale-105 shadow-lg cursor-pointer"
             >
               Start Free Trial
               <ArrowRight className="ml-2 w-5 h-5" />
-            </Link>
+            </button>
             <button
-              onClick={() => navigate(user ? '/app/become-mentor' : '/signup?role=mentor')}
+              onClick={handleBecomeMentor}
               className="inline-flex items-center justify-center px-8 py-4 bg-transparent text-white font-semibold rounded-lg border-2 border-white hover:bg-white hover:text-blue-600 transition-all cursor-pointer"
             >
               Become a Mentor
@@ -316,8 +412,9 @@ export default function LandingPage() {
             <div>
               <h4 className="text-white font-semibold mb-4">Support</h4>
               <ul className="space-y-2 text-sm">
-                <li><button onClick={() => navigate('/help')} className="hover:text-white transition cursor-pointer">Help Center</button></li>
-                <li><button onClick={() => navigate('/contact')} className="hover:text-white transition cursor-pointer">Contact</button></li>
+                <li><Link to="/support" className="hover:text-white transition">Support Center</Link></li>
+                <li><Link to="/help-center" className="hover:text-white transition">Help Center</Link></li>
+                <li><Link to="/contact" className="hover:text-white transition">Contact</Link></li>
                 <li><Link to="/privacy" className="hover:text-white transition">Privacy</Link></li>
               </ul>
             </div>

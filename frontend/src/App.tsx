@@ -7,6 +7,10 @@ import AboutPage from './pages/AboutPage'
 import BlogPage from './pages/BlogPage'
 import CareersPage from './pages/CareersPage'
 import PrivacyPage from './pages/PrivacyPage'
+import Support from './pages/Support'
+import HelpCenter from './pages/HelpCenter'
+import Contact from './pages/Contact'
+import Privacy from './pages/Privacy'
 import Home from './pages/Home'
 import TestSocket from './pages/TestSocket'
 import MonacoTest from './pages/MonacoTest'
@@ -53,6 +57,10 @@ export default function App() {
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/careers" element={<CareersPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/support" element={<Support />} />
+          <Route path="/help-center" element={<HelpCenter />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/info" element={<Privacy />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

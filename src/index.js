@@ -12,6 +12,10 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
+
+// Disable mongoose debug logging to reduce console noise from index creation
+mongoose.set('debug', false);
+
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth');
 const http = require('http');
