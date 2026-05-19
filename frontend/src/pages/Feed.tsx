@@ -22,6 +22,10 @@ export default function Feed() {
       try {
         setLoading(true)
         const token = localStorage.getItem('devlink_token')
+        if (!token) {
+          setPosts([])
+          return
+        }
         const headers: Record<string,string> = {}
         if (token) headers['Authorization'] = `Bearer ${token}`
         const res = await fetch(`${API_BASE}/posts`, { headers })
@@ -77,6 +81,10 @@ export default function Feed() {
     try {
       setPosting(true)
       const token = localStorage.getItem('devlink_token')
+      if (!token) {
+        alert('Please sign in to create a post')
+        return
+      }
       const form = new FormData()
       form.append('content', postText.trim())
       for (const img of selectedImages) form.append('images', img)

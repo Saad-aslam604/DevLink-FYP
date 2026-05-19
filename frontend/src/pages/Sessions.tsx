@@ -74,6 +74,16 @@ export default function Sessions() {
       const headers: Record<string,string> = { 'Content-Type': 'application/json' }
       if (token) headers['Authorization'] = `Bearer ${token}`
 
+      if (!token) {
+        setUpcomingSessions([])
+        setPastSessions([])
+        setCancelledSessions([])
+        setPendingSessions([])
+        setStats({ upcoming: 0, completed: 0, cancelled: 0 })
+        setLoading(false)
+        return
+      }
+
       const response = await fetch(`${API_BASE}/bookings/my`, { headers })
       if (!response.ok) {
         console.warn('Failed to load bookings, status', response.status)

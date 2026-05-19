@@ -43,6 +43,15 @@ export default function Settings() {
   const [blockedUsers, setBlockedUsers] = useState<Array<{ _id: string; firstName: string; lastName: string; avatar: string; email: string; title: string }>>([])
   const [loadingBlocked, setLoadingBlocked] = useState(false)
 
+  const requireToken = (): string | null => {
+    const t = token || localStorage.getItem('devlink_token')
+    if (!t) {
+      toast.show('Please sign in to continue', 'error')
+      return null
+    }
+    return t
+  }
+
   useEffect(() => {
     if (!user) return
     
@@ -264,6 +273,9 @@ export default function Settings() {
 
   const handleSaveCroppedImage = async () => {
     try {
+      const authToken = requireToken()
+      if (!authToken) return
+
       const croppedBlob = await getCroppedImg()
       if (!croppedBlob) {
         toast.show('Failed to crop image', 'error')
@@ -275,7 +287,7 @@ export default function Settings() {
 
       const res = await fetch(`${API_BASE}/profiles/me/avatar`, {
         method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        headers: { Authorization: `Bearer ${authToken}` },
         body: fd,
       })
 
@@ -298,7 +310,7 @@ export default function Settings() {
         // Force refresh of user profile to ensure avatar persists after reload
         try {
           const profileRes = await fetch(`${API_BASE}/auth/me`, {
-            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+            headers: { Authorization: `Bearer ${authToken}` },
           })
           if (profileRes.ok) {
             const profileData = await profileRes.json()
@@ -343,11 +355,14 @@ export default function Settings() {
       return
     }
     try {
+      const authToken = requireToken()
+      if (!authToken) return
+
       const res = await fetch(`${API_BASE}/auth/change-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${authToken}`
         },
         body: JSON.stringify({
           currentPassword,
@@ -371,6 +386,9 @@ export default function Settings() {
   // Privacy settings handler
   const handleSavePrivacy = async () => {
     try {
+      const authToken = requireToken()
+      if (!authToken) return
+
       const payload = {
         profileVisibility,
         allowAnalytics
@@ -379,7 +397,7 @@ export default function Settings() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${authToken}`
         },
         body: JSON.stringify(payload)
       })
@@ -418,11 +436,14 @@ export default function Settings() {
 
   const handleUnblockUser = async (blockedUserId: string) => {
     try {
+      const authToken = requireToken()
+      if (!authToken) return
+
       const res = await fetch(`${API_BASE}/profiles/blocked-users/${blockedUserId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${authToken}`
         }
       })
       if (res.ok) {
@@ -440,6 +461,9 @@ export default function Settings() {
   const handleSaveAccount = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
+      const authToken = requireToken()
+      if (!authToken) return
+
       const payload = {
         theme
       }
@@ -447,7 +471,7 @@ export default function Settings() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${authToken}`
         },
         body: JSON.stringify(payload)
       })
@@ -521,9 +545,11 @@ export default function Settings() {
       return
     }
     try {
-      const token = localStorage.getItem('devlink_token')
+      const authToken = requireToken()
+      if (!authToken) return
+
       const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-      if (token) headers['Authorization'] = `Bearer ${token}`
+      headers['Authorization'] = `Bearer ${authToken}`
       
       const res = await fetch(`${API_BASE}/profiles/portfolio`, {
         method: 'POST',
@@ -551,9 +577,11 @@ export default function Settings() {
   const deletePortfolioItem = async (itemId?: string) => {
     if (!itemId) return
     try {
-      const token = localStorage.getItem('devlink_token')
+      const authToken = requireToken()
+      if (!authToken) return
+
       const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-      if (token) headers['Authorization'] = `Bearer ${token}`
+      headers['Authorization'] = `Bearer ${authToken}`
       
       const res = await fetch(`${API_BASE}/profiles/portfolio/${itemId}`, {
         method: 'DELETE',
@@ -922,11 +950,14 @@ export default function Settings() {
                           const newValue = e.target.checked;
                           (async () => {
                             try {
+                              const authToken = requireToken()
+                              if (!authToken) return
+
                               const res = await fetch(`${API_BASE}/profiles/me`, {
                                 method: 'PUT',
                                 headers: {
                                   'Content-Type': 'application/json',
-                                  Authorization: `Bearer ${token}`
+                                  Authorization: `Bearer ${authToken}`
                                 },
                                 body: JSON.stringify({ emailVisible: newValue })
                               });

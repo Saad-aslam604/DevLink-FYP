@@ -332,6 +332,11 @@ export default function Dashboard() {
     const headers: Record<string,string> = {}
     if (token) headers['Authorization'] = `Bearer ${token}`
 
+    if (!token) {
+      setLoadingAnalytics(false)
+      return
+    }
+
     async function load() {
       try {
         setLoadingAnalytics(true)

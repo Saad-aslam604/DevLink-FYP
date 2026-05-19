@@ -8,6 +8,12 @@ export default function CommentSection({ postId, onNewComment }: { postId: strin
   const [input, setInput] = useState('')
 
   const load = async () => {
+    const token = localStorage.getItem('devlink_token')
+    if (!token) {
+      setComments([])
+      setLoading(false)
+      return
+    }
     setLoading(true)
     try {
       const resp = await getComments(postId)
@@ -21,6 +27,11 @@ export default function CommentSection({ postId, onNewComment }: { postId: strin
 
   const submit = async () => {
     if (!input || !input.trim()) return
+    const token = localStorage.getItem('devlink_token')
+    if (!token) {
+      alert('Please sign in to comment')
+      return
+    }
     const content = input.trim()
     const temp = { id: `temp_${Date.now()}`, content, createdAt: new Date().toISOString(), author: { id: localStorage.getItem('devlink_user_id') || undefined, firstName: 'You', avatar: undefined }, optimistic: true }
     setComments((s) => [...s, temp])

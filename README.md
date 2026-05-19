@@ -1,29 +1,88 @@
-# DevLink Backend
+# DevLink Platform (FYP)
 
-Express + MongoDB + Mongoose + JWT auth minimal backend.
+DevLink is a full-stack mentoring and collaboration platform built for Final Year Project work.
+It includes:
 
-Required env (copy `.env.example` -> `.env`):
-- PORT (default 5000)
-- MONGO_URI
-- JWT_SECRET
-- JWT_EXPIRE (e.g. 7d)
+- A Node.js + Express backend with MongoDB
+- A React + Vite + TypeScript frontend
+- Authentication, profiles, sessions, messaging, notifications, posts, ratings, and payments
 
-Install & run:
+## Tech Stack
+
+- Backend: Node.js, Express, Mongoose, JWT, Socket.IO
+- Frontend: React, Vite, TypeScript, Tailwind CSS
+- Database: MongoDB
+
+## Project Structure
+
+- `src/` -> backend source code
+- `frontend/` -> frontend application
+- `scripts/` -> utility and migration scripts
+
+## Local Setup
+
+### 1. Clone and Install
 
 ```powershell
-# from project root
+git clone <your-repo-url>
+cd DevLink-Platform
 npm install
-# dev (auto-restart)
-npm run dev
-# or production
-npm start
+cd frontend
+npm install
 ```
 
-Endpoints:
-- POST /api/auth/register  { email, password, role? }
-- POST /api/auth/login     { email, password }
-- GET  /api/auth/profile   (bearer token required)
+### 2. Environment Variables
 
-Notes:
-- Passwords are hashed with bcrypt.
-- JWT returned on login/register; include as `Authorization: Bearer <token>` on protected routes.
+At project root:
+
+```powershell
+copy .env.example .env
+```
+
+Minimum required values in `.env`:
+
+- `PORT=5000`
+- `MONGODB_URI=mongodb://localhost:27017/devlink`
+- `JWT_SECRET=your-secret`
+
+Optional values are already documented in `.env.example`.
+
+### 3. Run Backend
+
+From project root:
+
+```powershell
+npm run dev
+```
+
+Backend default URL:
+
+- `http://127.0.0.1:5000`
+
+### 4. Run Frontend
+
+From `frontend/`:
+
+```powershell
+npm run dev
+```
+
+Frontend default URL:
+
+- `http://127.0.0.1:3000`
+
+## Core Features
+
+- JWT authentication (email/password + Google)
+- Mentor/junior/student profiles
+- Session booking and session history
+- Real-time chat and notifications
+- Social feed with posts, likes, and comments
+- Ratings and withdrawal workflow
+- Admin and analytics modules
+
+## Notes
+
+- The backend writes the active server port to `CURRENT_BACKEND_PORT`.
+- If you see 401 responses, log in first so `devlink_token` is available in local storage.
+- For production, set strong secrets and tighten CORS settings.

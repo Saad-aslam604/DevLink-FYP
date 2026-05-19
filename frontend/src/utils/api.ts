@@ -38,6 +38,7 @@ export default api;
 
 export async function likePost(postId: string) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('devlink_token') : null;
+  if (!token) throw new Error('Not authenticated');
   const headers: Record<string,string> = {};
   if (token) headers['Authorization'] = `Bearer ${token}`;
   const res = await api.post(`/posts/${postId}/like`, {}, { headers });
@@ -45,12 +46,15 @@ export async function likePost(postId: string) {
 }
 
 export async function getComments(postId: string) {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('devlink_token') : null;
+  if (!token) throw new Error('Not authenticated');
   const res = await api.get(`/posts/${postId}/comments`);
   return res.data;
 }
 
 export async function addComment(postId: string, content: string) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('devlink_token') : null;
+  if (!token) throw new Error('Not authenticated');
   const headers: Record<string,string> = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
   const res = await api.post(`/posts/${postId}/comments`, { content }, { headers });
@@ -59,6 +63,7 @@ export async function addComment(postId: string, content: string) {
 
 export async function createPost(formData: FormData) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('devlink_token') : null;
+  if (!token) throw new Error('Not authenticated');
   const headers: Record<string,string> = {};
   if (token) headers['Authorization'] = `Bearer ${token}`;
   // let axios set multipart boundary automatically; do not set Content-Type

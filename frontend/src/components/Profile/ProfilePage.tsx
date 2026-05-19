@@ -117,6 +117,10 @@ export default function ProfilePage(): JSX.Element {
 
   async function fetchProfile() {
     if (!user) return
+    if (!token) {
+      setLoading(false)
+      return
+    }
     setLoading(true)
     setError(null)
     try {

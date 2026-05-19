@@ -9,7 +9,8 @@ const jwt = require('jsonwebtoken');
  */
 function generateToken(id, role = null, additionalPayload = {}) {
   // Validate environment variables (allow dev fallback)
-  const secret = process.env.JWT_SECRET || (process.env.NODE_ENV === 'development' ? 'dev-secret' : null)
+  const isProduction = process.env.NODE_ENV === 'production';
+  const secret = process.env.JWT_SECRET || (!isProduction ? 'dev-secret' : null);
   if (!secret) {
     throw new Error('JWT_SECRET is not set in environment variables');
   }
@@ -62,7 +63,8 @@ function verifyToken(token) {
     throw new Error('Token is required for verification');
   }
 
-  const secret = process.env.JWT_SECRET || (process.env.NODE_ENV === 'development' ? 'dev-secret' : null)
+  const isProduction = process.env.NODE_ENV === 'production';
+  const secret = process.env.JWT_SECRET || (!isProduction ? 'dev-secret' : null);
   if (!secret) {
     throw new Error('JWT_SECRET is not set in environment variables');
   }

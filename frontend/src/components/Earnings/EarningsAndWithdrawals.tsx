@@ -40,6 +40,11 @@ export default function EarningsAndWithdrawals({ API_BASE }: { API_BASE: string 
     try {
       setLoading(true)
       const token = localStorage.getItem('devlink_token')
+      if (!token) {
+        setEarnings(null)
+        setWithdrawals([])
+        return
+      }
       const res = await fetch(`${API_BASE}/withdrawals/my`, {
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -70,6 +75,10 @@ export default function EarningsAndWithdrawals({ API_BASE }: { API_BASE: string 
     setSubmitting(true)
     try {
       const token = localStorage.getItem('devlink_token')
+      if (!token) {
+        toast.show('Please sign in to request a withdrawal', 'error')
+        return
+      }
       const res = await fetch(`${API_BASE}/withdrawals`, {
         method: 'POST',
         headers: {

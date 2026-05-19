@@ -44,10 +44,28 @@ export const useDashboardData = (): DashboardData => {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!user?._id) return
+    if (!user?._id) {
+      setLoading(false)
+      return
+    }
 
     const fetchDashboardData = async () => {
       try {
+        const token = localStorage.getItem('devlink_token')
+        if (!token) {
+          setMetrics({
+            totalMeetings: 0,
+            upcomingMeetings: 0,
+            totalMessages: 0,
+            unreadMessages: 0,
+            totalConnections: 0,
+            activeCollaborators: 0,
+            engagementScore: 0,
+          })
+          setActivityTimeline([])
+          return
+        }
+
         setLoading(true)
         setError(null)
 
@@ -78,6 +96,9 @@ export const useDashboardData = (): DashboardData => {
         // Fetch user's messages
         let allMessages: any[] = []
         try {
+          if (!token) {
+            allMessages = []
+          } else {
           const messagesRes = await api.get('/messages/recent')
           console.log('💬 Messages response FULL:', JSON.stringify(messagesRes, null, 2))
           console.log('💬 Messages response type:', typeof messagesRes, 'is array:', Array.isArray(messagesRes))
@@ -98,6 +119,7 @@ export const useDashboardData = (): DashboardData => {
             console.log('💬 Could not parse messages, keys:', Object.keys(messagesRes || {}))
           }
           console.log('💬 Messages fetched:', allMessages.length)
+          }
         } catch (err: any) {
           console.warn('⚠️ Failed to fetch messages:', err?.message || err)
         }

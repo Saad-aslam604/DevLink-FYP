@@ -70,7 +70,7 @@ export const useNotifications = () => {
   // Fetch unread notifications
   const fetchUnread = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('devlink_token')
       if (!token) return
 
       const response = await fetch('/api/notifications/unread', {
@@ -92,7 +92,7 @@ export const useNotifications = () => {
   // Mark as read
   const markAsRead = useCallback(async (notificationId: string) => {
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('devlink_token')
       if (!token) return
 
       await fetch(`/api/notifications/${notificationId}/read`, {
@@ -112,7 +112,7 @@ export const useNotifications = () => {
   // Mark all as read
   const markAllAsRead = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('devlink_token')
       if (!token) return
 
       await fetch('/api/notifications/read-all', {
@@ -132,7 +132,7 @@ export const useNotifications = () => {
   // Delete notification
   const deleteNotification = useCallback(async (notificationId: string) => {
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('devlink_token')
       if (!token) return
 
       await fetch(`/api/notifications/${notificationId}`, {

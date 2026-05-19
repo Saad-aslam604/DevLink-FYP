@@ -63,6 +63,10 @@ export default function PostCard({ post, onLikeUpdated }: any) {
     if (!confirm('Delete this post? This cannot be undone.')) return
     try {
       const token = localStorage.getItem('devlink_token')
+      if (!token) {
+        alert('Please sign in to delete posts')
+        return
+      }
       const headers: Record<string,string> = {}
       if (token) headers['Authorization'] = `Bearer ${token}`
       const res = await fetch(`/api/posts/${encodeURIComponent(String(post.id))}`, { method: 'DELETE', headers })
@@ -77,6 +81,10 @@ export default function PostCard({ post, onLikeUpdated }: any) {
   const submitEdit = async () => {
     try {
       const token = localStorage.getItem('devlink_token')
+      if (!token) {
+        alert('Please sign in to edit posts')
+        return
+      }
       const headers: Record<string,string> = { 'Content-Type': 'application/json' }
       if (token) headers['Authorization'] = `Bearer ${token}`
       const res = await fetch(`/api/posts/${encodeURIComponent(String(post.id))}`, { method: 'PATCH', headers, body: JSON.stringify({ content: editText }) })
@@ -205,6 +213,10 @@ export default function PostCard({ post, onLikeUpdated }: any) {
                 try {
                   setReportSubmitting(true)
                   const token = localStorage.getItem('devlink_token')
+                  if (!token) {
+                    alert('Please sign in to report posts')
+                    return
+                  }
                   const headers: Record<string,string> = { 'Content-Type': 'application/json' }
                   if (token) headers['Authorization'] = `Bearer ${token}`
                   const res = await fetch('/api/reports', { method: 'POST', headers, body: JSON.stringify({ postId: String(post.id), reason: reportReason, details: reportDetails }) })

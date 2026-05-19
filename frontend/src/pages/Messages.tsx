@@ -193,7 +193,12 @@ export default function Messages() {
     try {
       setLoadingPreviews(true)
       const headers: Record<string,string> = {}
-      if (token) headers['Authorization'] = `Bearer ${token}`
+      if (!token) {
+        setPreviews([])
+        setLoadingPreviews(false)
+        return
+      }
+      headers['Authorization'] = `Bearer ${token}`
       const res = await fetch(`${API_BASE}/messages/recent`, { headers })
       if (!res.ok) return setPreviews([])
       const body = await res.json()
